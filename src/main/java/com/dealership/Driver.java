@@ -13,7 +13,7 @@ public class Driver {
         users[0] = customer;
         users[1] = employee;
         for (Object eachUser: users) {
-            System.out.println(eachUser);
+            System.out.println(eachUser.getClass().getSimpleName());
         }
     }
 }
