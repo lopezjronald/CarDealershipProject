@@ -17,6 +17,7 @@ public class Customer extends User {
         this.carsOwned = carsOwned;
     }
 
+    //TODO: need to add a functionality to add new cars and check status of the cars
     private void resizeCarInventory() {
         String[] currentCarsOwned = carsOwned;
         carsOwned = new String[carsOwned.length * 2];
