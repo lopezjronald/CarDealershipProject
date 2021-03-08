@@ -17,7 +17,10 @@ public class Login {
                 return "c";
             } else if (userChoice.equals("2")) {
                 return "e";
-            } else {
+            } else if (userChoice.equals("3")) {
+                return "Visit Us Soon!";
+            }
+            else {
                 System.out.println("That is an invalid entry. Please choose one of the three options");
             }
         }
