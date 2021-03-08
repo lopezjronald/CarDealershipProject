@@ -3,7 +3,7 @@ package com.dealership;
 import com.dealership.database.ConnectionUtil;
 import com.dealership.model.DealershipUser;
 import com.dealership.service.UserService;
-import com.dealership.ui.Login;
+import com.dealership.ui.Registration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,16 +25,19 @@ public class Driver {
         log.info("Scanner created");
 
 
-        Login login = new Login();
-        login.greeting();
-        login.userLogin(scan);
-
-        DealershipUser user = login.createUser(scan);
-        if (user.getFirstName() == null) {
-            System.out.println("Visit Soon");
+        Registration registration = new Registration();
+        registration.greeting();
+        String userResponse = registration.userLogin(scan);
+        if (userResponse.equals("q")) {
+            System.out.println("Visit us soon!");
         } else {
-            int result = userService.save(user, dealershipDatabase);
-            System.out.println(result);
+            DealershipUser user = registration.createUser(scan, userResponse);
+            if (user.getFirstName() == null) {
+                System.out.println("Visit Soon");
+            } else {
+                int result = userService.save(user, dealershipDatabase);
+                System.out.println(result);
+            }
         }
     }
 }

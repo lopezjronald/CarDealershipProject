@@ -4,32 +4,35 @@ import com.dealership.model.DealershipUser;
 
 import java.util.Scanner;
 
-public class Login {
+public class Registration {
 
     final static String EMPLOYEE_VERIFICATION_CODE = "password";
+    final String EMPLOYEE = "1";
+    final String CUSTOMER = "2";
+
 
     public void greeting() {
         System.out.println("Welcome to the Car Dealership");
     }
 
     public String userLogin(Scanner scan) {
-        System.out.print("Would you like to sign in as a:\n");
-        System.out.println("1. Customer\n2. Employee\n3. Exit");
+        System.out.print("Would you like to register as a:\n");
+        System.out.println(EMPLOYEE + ". Employee\n" + CUSTOMER + ". Customer\n3. Exit");
         while (true) {
             String userChoice = scan.nextLine();
-            if (userChoice.equals("1")) {
-                return "c";
-            } else if (userChoice.equals("2")) {
+            if (userChoice.equals(EMPLOYEE)) {
                 return "e";
+            } else if (userChoice.equals(CUSTOMER)) {
+                return "c";
             } else if (userChoice.equals("3")) {
-                return "Visit Us Soon!";
+                return "q";
             } else {
                 System.out.println("That is an invalid entry. Please choose one of the three options");
             }
         }
     }
 
-    public DealershipUser createUser(Scanner scanner) {
+    public DealershipUser createUser(Scanner scanner, String registrationType) {
         DealershipUser user = new DealershipUser();
         System.out.println("Please enter information");
         System.out.print("Username: ");
@@ -40,19 +43,12 @@ public class Login {
         String firstName = scanner.nextLine();
         System.out.print("Last Name: ");
         String lastName = scanner.nextLine();
-        String userType = "1";
-        while (true) {
-            System.out.println("Are you an employee or customer?");
-            System.out.println("1: Customer\n2: Employee");
-            userType = scanner.nextLine();
-            if (userType.equals("1"))
-                break;
-            else
-                userType = isEmployee(scanner);
+        String userType = CUSTOMER;
+        if (registrationType.equals("e")) {
+            userType = isEmployee(scanner);
             if (userType.equals("q")) {
                 return user;
             }
-            break;
         }
         return new DealershipUser(username, password, firstName, lastName, Integer.parseInt(userType));
     }
@@ -63,16 +59,16 @@ public class Login {
         while (true) {
             String verificationCode = scanner.nextLine();
             if (EMPLOYEE_VERIFICATION_CODE.equals(verificationCode)) {
-                return "2";
-            } else if (verificationCode.equals("1")) {
+                return EMPLOYEE;
+            } else if (verificationCode.equals(CUSTOMER)) {
                 break;
-            } else if (verificationCode.equals("q")){
+            } else if (verificationCode.equals("q")) {
                 return "q";
             } else {
-                System.out.println("Invalid entry. Press \"q\" to Quit or \"1\" if you want to register as a customer.");
+                System.out.println("Invalid entry. Press \"q\" to Quit or " + CUSTOMER + " if you want to register as a customer.");
             }
         }
-        return "1";
+        return CUSTOMER;
     }
 
 }
