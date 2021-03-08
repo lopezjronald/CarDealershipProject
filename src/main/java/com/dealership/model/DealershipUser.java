@@ -5,7 +5,6 @@ import java.util.Scanner;
 
 public class DealershipUser {
 
-    final static String EMPLOYEE_VERIFICATION_CODE = "password";
 
     private String username;
     private String userPassword;
@@ -87,16 +86,6 @@ public class DealershipUser {
                 ", userType='" + userType + '\'' +
                 '}';
     }
-
-    public boolean isEmployee(Scanner scanner) {
-        System.out.println("Please enter employee verification code: ");
-        String verificationCode = scanner.nextLine();
-        if (EMPLOYEE_VERIFICATION_CODE.equals(verificationCode)) {
-            return true;
-        }
-        return false;
-    };
-
 
 
 }
