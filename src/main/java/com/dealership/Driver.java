@@ -2,7 +2,7 @@ package com.dealership;
 
 import com.dealership.database.ConnectionUtil;
 import com.dealership.model.DealershipUser;
-import com.dealership.service.CustomerService;
+import com.dealership.service.EmployeeService;
 import com.dealership.service.UserService;
 import com.dealership.ui.Login;
 import org.slf4j.Logger;
@@ -25,13 +25,16 @@ public class Driver {
         log.info("Scanner created");
 
 
-
         Login login = new Login();
         DealershipUser user = login.loginInformation(connection, scanner, userService);
 
-        CustomerService customerService = new CustomerService(user);
-        customerService.runCustomerService(scanner, user, connection);
+        EmployeeService employeeService = new EmployeeService();
+        employeeService.displayOffers(connection, scanner, userService);
 
+//        if (user.getFirstName() != null) {
+//            CustomerService customerService = new CustomerService(user);
+//            customerService.runCustomerService(scanner, user, connection);
+//        }
 
 
 //        userService.removeVehicle(userInfo, connection, scanner);
@@ -50,7 +53,6 @@ public class Driver {
 //            }
 
 //        }
-
 
 
     }

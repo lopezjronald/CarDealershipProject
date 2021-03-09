@@ -8,6 +8,7 @@ import java.util.Scanner;
 
 public class CustomerService {
 
+    private final UserService userService = new UserService();
     private DealershipUser user;
 
     public CustomerService() {
@@ -17,11 +18,16 @@ public class CustomerService {
         this.user = user;
     }
 
-    private final UserService userService = new UserService();
-
     public void runCustomerService(Scanner scanner, DealershipUser user, Connection connection) {
+        customerGreeting(user);
         while (true) {
-            int userOption = showCustomerMenu(scanner, user);
+            int userOption;
+            try {
+                userOption = showCustomerMenu(scanner, user);
+            } catch (Exception e) {
+                System.out.println("That is an invalid entry");
+                continue;
+            }
             switch (userOption) {
                 case 1:
                     getDealershipInventory(user, connection);
@@ -32,15 +38,18 @@ public class CustomerService {
                 case 3:
                     scanner.nextLine();
                     Offer offer = userService.makeOffer(user, userService, scanner, connection);
-                    System.out.println(offer.toString());
+                    break;
+                case 4:
                     break;
                 default:
-                    System.out.println("I am the default case");
+                    System.out.println("You have entered an invalid entry");
+                    continue;
             }
-            if (userOption == 3)
-                break;
-        }
 
+            if (userOption == 4) {
+                break;
+            }
+        }
 
 
     }
@@ -51,11 +60,11 @@ public class CustomerService {
     }
 
     public int showCustomerMenu(Scanner scanner, DealershipUser user) {
-        customerGreeting(user);
         while (true) {
             System.out.println("1. Show Dealership Inventory");
             System.out.println("2. Show Cars You Own");
             System.out.println("3. Make an Offer");
+            System.out.println("4. Exit");
             try {
                 return scanner.nextInt();
             } catch (Exception e) {
@@ -64,18 +73,18 @@ public class CustomerService {
                 String option = scanner.nextLine();
                 if (option.equalsIgnoreCase("q")) {
                     return -1;
-                }else
+                } else
                     continue;
             }
         }
     }
 
     public String[] getMyVehicles(UserService userService, DealershipUser user, Connection connection) {
-        String [] myVehicles;
+        String[] myVehicles;
         myVehicles = userService.viewUserVehicles(user, connection);
         System.out.println("Cars Owned by " + userService.capitalizeString(user.getFirstName()));
 
-        for (String eachVehicle: myVehicles){
+        for (String eachVehicle : myVehicles) {
             System.out.println(eachVehicle);
         }
 
@@ -84,7 +93,7 @@ public class CustomerService {
 
     public String[] getDealershipInventory(DealershipUser user, Connection connection) {
         String[] dealershipInventory = userService.viewDealershipInventory(user, connection);
-        System.out.println("Car Dealership Currently Has " + dealershipInventory[dealershipInventory.length-1] + " In Stock:");
+        System.out.println("Car Dealership Currently Has " + dealershipInventory[dealershipInventory.length - 1] + " In Stock:");
         for (int i = 0; i < dealershipInventory.length - 1; i++) {
 
             System.out.println(dealershipInventory[i]);

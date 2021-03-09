@@ -120,7 +120,6 @@ public class UserService {
                 double offerAmount = scanner.nextDouble();
                 newOffer = new Offer(offerAmount, user.getUserId(), vin);
                 break;
-
             } catch (Exception e) {
                 System.out.println("You have entered an invalid entry. Please enter your offer amount.");
                 continue;
@@ -147,6 +146,48 @@ public class UserService {
         }
     }
 
+
+    private int retrieveOfferCount(Connection connection, Scanner scanner, String vin) {
+        int inventoryCount = 0;
+        String sql =
+                "SELECT COUNT(*) " +
+                        "FROM offer " +
+                        "WHERE vehicle_id = '" + vin + "'";
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sql);
+            while (resultSet.next()) {
+                return resultSet.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.out.println("At this time, you have " + inventoryCount + " offers for vehicle #: " + vin + ".");
+        }
+        return inventoryCount;
+    }
+
+    public Offer[] retrieveOffers(Connection connection, Scanner scanner, UserService userService) {
+        String vin = askForVin(scanner);
+        Offer[] allOffers = new Offer[retrieveOfferCount(connection, scanner, vin)];
+        if (allOffers.length > 0) {
+            try {
+                String sql = "SELECT id, offer_amount, user_id, vehicle_id FROM offer WHERE vehicle_id = '" + vin + "'";
+                Statement statement = connection.createStatement();
+                ResultSet resultSet = statement.executeQuery(sql);
+                int count = 0;
+                while (resultSet.next()) {
+                    Integer id = resultSet.getInt("id");
+                    double offerAmount = resultSet.getDouble("offer_amount");
+                    Integer userId = resultSet.getInt("user_id");
+                    String vehicleId = resultSet.getString("vehicle_id");
+                    allOffers[count++] = new Offer(id, offerAmount, userId, vehicleId);
+                }
+                return allOffers;
+            } catch (SQLException e) {
+                return allOffers;
+            }
+        }
+        return allOffers;
+    }
 
 
 //    public String retrieveVehicleByVin(Connection connection, String vin) {

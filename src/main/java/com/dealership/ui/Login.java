@@ -4,7 +4,6 @@ import com.dealership.model.DealershipUser;
 import com.dealership.service.UserService;
 
 import java.sql.Connection;
-
 import java.util.Scanner;
 
 
