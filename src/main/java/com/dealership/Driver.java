@@ -27,34 +27,8 @@ public class Driver {
 
         Login login = new Login();
         DealershipUser user = login.loginInformation(connection, scanner, userService);
-
         EmployeeService employeeService = new EmployeeService(userService, user);
         employeeService.displayOffers(connection, scanner, userService);
-
-
-//        if (user.getFirstName() != null) {
-//            CustomerService customerService = new CustomerService(user);
-//            customerService.runCustomerService(scanner, user, connection);
-//        }
-
-
-//        userService.removeVehicle(userInfo, connection, scanner);
-//        String result = userService.addVehicle(userInfo, connection, scanner);
-//        System.out.println(result);
-//        if (userInfo.getFirstName() != null) {
-//            String[] customerInventory = userService.viewUserVehicles(userInfo, connection);
-//            String[] dealershipInventory = userService.viewDealershipInventory(userInfo, connection);
-//            System.out.println(userInfo.getFirstName() + " owns: ");
-//            for (String eachVehicle: customerInventory) {
-//                System.out.println(eachVehicle);
-//            }
-//            System.out.println("Car Dealership Currently Has " + dealershipInventory[dealershipInventory.length-1] + " In Stock:");
-//            for (int i = 0; i < dealershipInventory.length - 1; i++) {
-//                System.out.println(dealershipInventory[i]);
-//            }
-
-//        }
-
 
     }
 }

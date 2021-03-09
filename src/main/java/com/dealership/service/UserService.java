@@ -15,7 +15,6 @@ public class UserService {
     private final int EMPLOYEE_NUMBER = 1;
     private final int OWNER_NUMBER = 3;
 
-
     private Vehicle getVehicleInformation(Scanner scanner, DealershipUser user) {
         System.out.println("Please enter vehicle information:");
         System.out.println("VIN Number: ");
@@ -70,11 +69,6 @@ public class UserService {
             return "Sorry. Only workers can add new vehicles to the inventory";
     }
 
-    public String askForVin(Scanner scanner) {
-        System.out.print("Enter Vehicle VIN#: ");
-        return scanner.nextLine();
-    }
-
     public void removeVehicleFromInventory(DealershipUser user, Connection connection, Scanner scanner) {
         if (checkUserType(user)) {
             String vin = askForVin(scanner);
@@ -103,6 +97,29 @@ public class UserService {
      * Offer Methods
      *
      *************************/
+
+    public void acceptOffer(DealershipUser user, Scanner scanner, Connection connection) {
+        try {
+            String sql = "SELECT * FROM dealership_user WHERE username = '" +
+                    username + "' AND user_password = '" +
+                    password + "'";
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sql);
+            while (resultSet.next()) {
+                Integer userId = resultSet.getInt(1);
+                // username;
+                // password;
+                String firstName = resultSet.getString(4);
+                String lastName = resultSet.getString(5);
+                Integer userTypeId = resultSet.getInt(6);
+                return new DealershipUser(userId, username, password, firstName, lastName, userTypeId);
+
+            }
+        } catch (SQLException e) {
+//            return new DealershipUser();
+        }
+//        return new DealershipUser();
+    }
 
     public int askForOfferId(Scanner scanner) {
         int id = -1;
@@ -172,7 +189,6 @@ public class UserService {
         }
     }
 
-
     private int retrieveOfferCount(Connection connection, Scanner scanner, String vin) {
         int inventoryCount = 0;
         String sql =
@@ -215,69 +231,6 @@ public class UserService {
         return allOffers;
     }
 
-
-//    public String retrieveVehicleByVin(Connection connection, String vin) {
-//        try {
-//            String sql = "SELECT vehicle_vin FROM vehicle WHERE vehicle_vin = '" + vin + "'";
-//            Statement statement = connection.createStatement();
-//            ResultSet resultSet = statement.executeQuery(sql);
-//            while (resultSet.next()) {
-//                return resultSet.getString(1);
-//            }
-//        } catch (SQLException e) {
-//            System.out.println("Exception occurred");
-//        }
-//        return null;
-//    }
-
-//    public void addOffer(DealershipUser user, Connection connection, Scanner scanner) {
-//        if (!checkUserType(user)) {
-//            String vin = askForVin(scanner);
-//            int inventoryCount = inventoryCount(user, connection);
-//            String[] inventory = new String[inventoryCount + 1];
-//            String sql =
-//                    "SELECT vehicle_vin, vehicle_make, vehicle_model, vehicle_year " +
-//                            "FROM vehicle " +
-//                            "INNER JOIN dealership_user " +
-//                            "ON dealership_user.id = vehicle.owner_id " +
-//                            "INNER JOIN user_type " +
-//                            "ON user_type.id = dealership_user.user_type " +
-//                            "WHERE user_type.id = '" + EMPLOYEE_NUMBER +
-//                            "' OR user_type.id ='" + OWNER_NUMBER + "'";
-//            try {
-//                Statement statement = connection.createStatement();
-//                ResultSet resultSet = statement.executeQuery(sql);
-//                int count = 0;
-//                String description;
-//                while (resultSet.next()) {
-//                    description = resultSet.getString("vehicle_vin") +
-//                            " | Make: " + resultSet.getString("vehicle_make") +
-//                            " | Model: " + resultSet.getString("vehicle_model") +
-//                            " | Year: " + resultSet.getString("vehicle_year");
-//                    inventory[count++] = description;
-//                }
-//                inventory[count] = Integer.toString(inventoryCount);
-//            } catch (SQLException e) {
-//
-//            }
-//            int vehicleUser = checkIfVehicleBelongsToDealership(vin, connection);
-//            if (vehicleUser != 2) {
-//                try {
-//                    String sql =
-//                            "DELETE FROM vehicle WHERE vehicle_vin = '" + vin + "'";
-//
-//                    Statement statement = connection.createStatement();
-//                    statement.executeUpdate(sql);
-//                    System.out.println(capitalizeString(user.getFirstName()) + ", you have successfully entered an offer for vehicle with VIN #: " + vin + ".");
-//                } catch (SQLException e) {
-//                    e.printStackTrace();
-//                    System.out.println("VIN " + vin + " is not in the dealership lot.");
-//                }
-//            } else
-//                System.out.println("You do not have permission to delete vehicles that belong to customers.");
-//        }
-//    }
-
     /************************
      *
      * Registration Methods
@@ -306,13 +259,11 @@ public class UserService {
         }
     }
 
-
     /************************
      *
      * Login Methods
      *
      *************************/
-
 
     public DealershipUser loginQuery(Connection connection, String username, String password) {
         try {
@@ -402,7 +353,6 @@ public class UserService {
      * Customer Methods
      *
      *************************/
-
 
     private int getUserVehicleCount(DealershipUser user, Connection connection) {
         int inventoryCount = 0;
@@ -496,5 +446,9 @@ public class UserService {
         return null;
     }
 
+    public String askForVin(Scanner scanner) {
+        System.out.print("Enter Vehicle VIN#: ");
+        return scanner.nextLine();
+    }
 
 }
