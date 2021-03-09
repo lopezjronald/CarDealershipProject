@@ -1,18 +1,75 @@
 package com.dealership.service;
 
 import com.dealership.model.DealershipUser;
+import com.dealership.model.Vehicle;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Scanner;
 
 public class UserService {
 
-    private final String EMPLOYEE = "employee";
-    private final String OWNER = "owner";
     private final int EMPLOYEE_NUMBER = 1;
     private final int OWNER_NUMBER = 3;
+
+
+    private Vehicle getVehicleInformation(Scanner scanner, DealershipUser user) {
+        System.out.println("Please enter vehicle information:");
+        System.out.println("VIN Number: ");
+        String vin = scanner.nextLine();
+        System.out.println("Vehicle Make: ");
+        String vehicleMake = scanner.nextLine();
+        System.out.println("Vehicle Model: ");
+        String vehicleModel = scanner.nextLine();
+        System.out.println("Vehicle Year: ");
+        Integer vehicleYear;
+
+        while (true) {
+            try {
+                vehicleYear = scanner.nextInt();
+                scanner.nextLine();
+            } catch (Exception e) {
+                System.out.println("Sorry, that is an invalid entry. Please enter the year for the vehicle.");
+                scanner.nextLine();
+                continue;
+            }
+            break;
+        }
+
+        Integer employeeId = user.getUserId();
+        return new Vehicle(vin, vehicleMake, vehicleModel, vehicleYear, employeeId);
+    }
+
+    public String addVehicle(DealershipUser user, Connection connection, Scanner scanner) {
+        System.out.println(user.getUserType());
+        if (user.getUserType() == EMPLOYEE_NUMBER || user.getUserType() == OWNER_NUMBER) {
+            Vehicle newVehicle = getVehicleInformation(scanner, user);
+
+            System.out.println(newVehicle);
+            try {
+                String sql =
+                        "INSERT INTO vehicle " +
+                                "(vehicle_vin, vehicle_make, vehicle_model, vehicle_year, owner_id) " +
+                                "VALUES " + "('" +
+                                newVehicle.getVin() + "', '" +
+                                newVehicle.getMake() + "', '" +
+                                newVehicle.getModel() + "', '" +
+                                newVehicle.getYear() + "', '" +
+                                newVehicle.getOwnerId() + "')";
+
+                Statement statement = connection.createStatement();
+                int i = statement.executeUpdate(sql);
+                System.out.println(capitalizeString(user.getFirstName()) + ", you have successfully added the " + capitalizeString(newVehicle.getMake()) + ".");
+                return "Successful Entry";
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return "Something went wrong";
+            }
+        } else
+            return "Sorry. Only workers can add new vehicles to the inventory";
+    }
 
 
     public int save(DealershipUser user, Connection connection) {
@@ -29,7 +86,7 @@ public class UserService {
 
             Statement statement = connection.createStatement();
             int i = statement.executeUpdate(sql);
-            System.out.println("The number of updated rows were " + i);
+            System.out.println(capitalizeString(user.getFirstName()) + ", you have successfully registered as " + (user.getUserType().equals("customer") ? "a customer." : "an employee."));
             return i;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -159,7 +216,7 @@ public class UserService {
     }
 
     public String capitalizeString(String str) {
-        return str.substring(0, 1).toUpperCase() + str.substring(1);
+        return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
     }
 
 }

@@ -20,13 +20,15 @@ public class Driver {
         UserService userService = new UserService();
         ConnectionUtil connection = new ConnectionUtil();
         Connection dealershipDatabase = connection.getConnection();
-
-
         Scanner scan = new Scanner(System.in);
         log.info("Scanner created");
 
+
+
         Login login = new Login();
         DealershipUser userInfo = login.loginInformation(dealershipDatabase, scan, userService);
+        String result = userService.addVehicle(userInfo, dealershipDatabase, scan);
+        System.out.println(result);
         if (userInfo.getFirstName() != null) {
             String[] customerInventory = userService.viewUserVehicles(userInfo, dealershipDatabase);
             String[] dealershipInventory = userService.viewDealershipInventory(userInfo, dealershipDatabase);
@@ -38,11 +40,8 @@ public class Driver {
             for (int i = 0; i < dealershipInventory.length - 1; i++) {
                 System.out.println(dealershipInventory[i]);
             }
+
         }
-
-
-
-
 
 
 
