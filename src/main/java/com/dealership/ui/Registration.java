@@ -1,7 +1,9 @@
 package com.dealership.ui;
 
 import com.dealership.model.DealershipUser;
+import com.dealership.service.UserService;
 
+import java.sql.Connection;
 import java.util.Scanner;
 
 public class Registration {
@@ -69,6 +71,22 @@ public class Registration {
             }
         }
         return CUSTOMER;
+    }
+
+    public void registerNewUser(Connection dealershipDatabase, Scanner scanner, UserService userService) {
+        greeting();
+        String userResponse = userLogin(scanner);
+        if (userResponse.equals("q")) {
+            System.out.println("Visit us soon!");
+        } else {
+            DealershipUser user = createUser(scanner, userResponse);
+            if (user.getFirstName() == null) {
+                System.out.println("Visit us soon!");
+            } else {
+                int result = userService.save(user, dealershipDatabase);
+                System.out.println(result);
+            }
+        }
     }
 
 }

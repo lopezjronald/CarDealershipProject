@@ -5,7 +5,6 @@ import java.util.Scanner;
 
 public class DealershipUser {
 
-
     private String username;
     private String userPassword;
     private String firstName;
@@ -86,6 +85,5 @@ public class DealershipUser {
                 ", userType='" + userType + '\'' +
                 '}';
     }
-
 
 }
