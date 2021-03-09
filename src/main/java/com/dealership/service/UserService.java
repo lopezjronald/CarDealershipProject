@@ -43,11 +43,9 @@ public class UserService {
     }
 
     public String addVehicle(DealershipUser user, Connection connection, Scanner scanner) {
-        System.out.println(user.getUserType());
-        if (user.getUserType() == EMPLOYEE_NUMBER || user.getUserType() == OWNER_NUMBER) {
+        if (checkUserType(user)) {
             Vehicle newVehicle = getVehicleInformation(scanner, user);
 
-            System.out.println(newVehicle);
             try {
                 String sql =
                         "INSERT INTO vehicle " +
@@ -69,6 +67,35 @@ public class UserService {
             }
         } else
             return "Sorry. Only workers can add new vehicles to the inventory";
+    }
+
+    public String askForVin(Scanner scanner) {
+        System.out.print("Please enter vehicle VIN number you would like to delete: ");
+        return scanner.nextLine();
+    }
+
+    public void removeVehicle(DealershipUser user, Connection connection, Scanner scanner) {
+        if (checkUserType(user)) {
+            String vin = askForVin(scanner);
+            int vehicleUser = checkIfVehicleBelongsToCustomer(vin, connection);
+            if (vehicleUser != 2) {
+                try {
+                    String sql =
+                            "DELETE FROM vehicle WHERE vehicle_vin = '" + vin + "'";
+
+                    Statement statement = connection.createStatement();
+                    statement.executeUpdate(sql);
+                    System.out.println(capitalizeString(user.getFirstName()) + ", you have successfully removed the vehicle with VIN #: " + vin + ".");
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    System.out.println("VIN " + vin + " does not exist in the system");
+                }
+            }
+            else
+                System.out.println("You do not have permission to delete vehicles that belong to customers.");
+
+        } else if (user.getUserType() == 2)
+            System.out.println("Sorry. Only workers can remove vehicles from the inventory");
     }
 
 
@@ -217,6 +244,32 @@ public class UserService {
 
     public String capitalizeString(String str) {
         return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
+    }
+
+    public boolean checkUserType(DealershipUser user) {
+        return (user.getUserType() == EMPLOYEE_NUMBER || user.getUserType() == OWNER_NUMBER);
+    }
+
+    public int checkIfVehicleBelongsToCustomer(String vin, Connection connection) {
+        String sql =
+                "SELECT dealership_user.user_type " +
+                        "FROM vehicle " +
+                        "INNER JOIN dealership_user " +
+                        "ON dealership_user.id = vehicle.owner_id " +
+                        "INNER JOIN user_type " +
+                        "ON user_type.id = dealership_user.user_type " +
+                        "WHERE vehicle_vin ='" + vin + "'";
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sql);
+            while (resultSet.next()) {
+                return resultSet.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.out.println("Something went wrong");
+            return -1;
+        }
+        return -1;
     }
 
 }
