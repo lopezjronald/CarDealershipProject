@@ -28,8 +28,9 @@ public class Driver {
         Login login = new Login();
         DealershipUser user = login.loginInformation(connection, scanner, userService);
 
-        EmployeeService employeeService = new EmployeeService();
+        EmployeeService employeeService = new EmployeeService(userService, user);
         employeeService.displayOffers(connection, scanner, userService);
+
 
 //        if (user.getFirstName() != null) {
 //            CustomerService customerService = new CustomerService(user);

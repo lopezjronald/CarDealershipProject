@@ -75,7 +75,7 @@ public class UserService {
         return scanner.nextLine();
     }
 
-    public void removeVehicle(DealershipUser user, Connection connection, Scanner scanner) {
+    public void removeVehicleFromInventory(DealershipUser user, Connection connection, Scanner scanner) {
         if (checkUserType(user)) {
             String vin = askForVin(scanner);
             int vehicleUser = checkIfVehicleBelongsToCustomer(vin, connection);
@@ -98,17 +98,43 @@ public class UserService {
             System.out.println("Sorry. Only workers can remove vehicles from the inventory");
     }
 
-    public String checkIfVehicleExists(DealershipUser user, Connection connection, Scanner scanner) {
-        String vin = askForVin(scanner);
-        int vehicleUser = checkIfVehicleBelongsToCustomer(vin, connection);
-        if (vehicleUser == -1) {
-            System.out.println("Sorry, vehicle with Vin # " + vin + " does not exist");
-            return null;
-        } else if (vehicleUser != 2) {
-            return vin;
-        } else if (user.getUserType() == 2)
-            System.out.println("Sorry. This vehicle belongs to a customer.");
-        return null;
+    /************************
+     *
+     * Offer Methods
+     *
+     *************************/
+
+    public int askForOfferId(Scanner scanner) {
+        int id = -1;
+        System.out.print("Please enter the Offer ID: ");
+        while (true) {
+            try {
+                String idChoice = scanner.nextLine();
+                id = Integer.parseInt(idChoice);
+                break;
+            } catch (Exception e) {
+                System.out.print("That is an invalid choice. Please enter an offer ID number: ");
+            }
+        }
+        return id;
+    }
+
+    public void removeVehicleFromOffers(DealershipUser user, Connection connection, Scanner scanner) {
+        if (checkUserType(user)) {
+            Integer offerId = askForOfferId(scanner);
+            try {
+                String sql =
+                        "DELETE FROM offer WHERE id = '" + offerId + "'";
+
+                Statement statement = connection.createStatement();
+                statement.executeUpdate(sql);
+                System.out.println(capitalizeString(user.getFirstName()) + ", you have successfully removed the offer with ID #: " + offerId + ".");
+            } catch (SQLException e) {
+                e.printStackTrace();
+                System.out.println("Offer Id:  " + offerId + " does not exist in the system");
+            }
+
+        }
     }
 
     public Offer makeOffer(DealershipUser user, UserService userService, Scanner scanner, Connection connection) {
@@ -252,6 +278,11 @@ public class UserService {
 //        }
 //    }
 
+    /************************
+     *
+     * Registration Methods
+     *
+     *************************/
 
     public int save(DealershipUser user, Connection connection) {
         try {
@@ -275,6 +306,14 @@ public class UserService {
         }
     }
 
+
+    /************************
+     *
+     * Login Methods
+     *
+     *************************/
+
+
     public DealershipUser loginQuery(Connection connection, String username, String password) {
         try {
             String sql = "SELECT * FROM dealership_user WHERE username = '" +
@@ -297,6 +336,12 @@ public class UserService {
         }
         return new DealershipUser();
     }
+
+    /************************
+     *
+     * Dealership Methods
+     *
+     *************************/
 
     private int inventoryCount(DealershipUser user, Connection connection) {
         int inventoryCount = 0;
@@ -352,6 +397,12 @@ public class UserService {
         }
     }
 
+    /************************
+     *
+     * Customer Methods
+     *
+     *************************/
+
 
     private int getUserVehicleCount(DealershipUser user, Connection connection) {
         int inventoryCount = 0;
@@ -396,6 +447,12 @@ public class UserService {
         return inventory;
     }
 
+    /************************
+     *
+     * Useful Repetitive Methods
+     *
+     *************************/
+
     public String capitalizeString(String str) {
         return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
     }
@@ -424,6 +481,19 @@ public class UserService {
             return -1;
         }
         return -1;
+    }
+
+    public String checkIfVehicleExists(DealershipUser user, Connection connection, Scanner scanner) {
+        String vin = askForVin(scanner);
+        int vehicleUser = checkIfVehicleBelongsToCustomer(vin, connection);
+        if (vehicleUser == -1) {
+            System.out.println("Sorry, vehicle with Vin # " + vin + " does not exist");
+            return null;
+        } else if (vehicleUser != 2) {
+            return vin;
+        } else if (user.getUserType() == 2)
+            System.out.println("Sorry. This vehicle belongs to a customer.");
+        return null;
     }
 
 
