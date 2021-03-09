@@ -1,5 +1,6 @@
 package com.dealership.ui;
 
+import com.dealership.model.DealershipUser;
 import com.dealership.service.UserService;
 
 import java.sql.Connection;
@@ -23,17 +24,17 @@ public class Login {
         return scanner.nextLine();
     }
 
-    public String[] loginInformation(Connection connection, Scanner scanner, UserService userService) {
+    public DealershipUser loginInformation(Connection connection, Scanner scanner, UserService userService) {
 
         boolean continueToLogin = true;
         String response;
-        String[] userInfo = null;
+        DealershipUser userInfo;
         while (continueToLogin) {
             String username = askUsername(scanner);
             String password = askPassword(scanner);
             userInfo = userService.loginQuery(connection, username, password);
 
-            if (userInfo[1] == null) {
+            if (userInfo.getFirstName() == null) {
                 System.out.println("Sorry. You have entered an invalid username or password.");
                 System.out.print("Press any key to continue, \"q\" to quit or \"r\" to register: ");
                 response = scanner.nextLine();
@@ -48,9 +49,8 @@ public class Login {
                     continue;
                 }
             }
-            continueToLogin = false;
+            return userInfo;
         }
-        return userInfo;
-
+        return new DealershipUser();
     }
 }

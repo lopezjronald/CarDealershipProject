@@ -80,8 +80,7 @@ public class UserService {
         }
     }
 
-    public String[] loginQuery(Connection connection, String username, String password) {
-        String[] userInfo = new String[6];
+    public DealershipUser loginQuery(Connection connection, String username, String password) {
         try {
             String sql = "SELECT * FROM dealership_user WHERE username = '" +
                     username + "' AND user_password = '" +
@@ -89,18 +88,19 @@ public class UserService {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sql);
             while (resultSet.next()) {
-                userInfo[0] = Integer.toString(resultSet.getInt(1));
-                userInfo[1] = username;
-                userInfo[2] = password;
-                userInfo[3] = resultSet.getString(4);
-                userInfo[4] = resultSet.getString(5);
-                userInfo[5] = Integer.toString(resultSet.getInt(6));
+                Integer userId = resultSet.getInt(1);
+                // username;
+                // password;
+                String firstName = resultSet.getString(4);
+                String lastName = resultSet.getString(5);
+                Integer userTypeId = resultSet.getInt(6);
+                return new DealershipUser(userId, username, password, firstName, lastName, userTypeId);
 
             }
         } catch (SQLException e) {
-            return userInfo;
+            return new DealershipUser();
         }
-        return userInfo;
+        return new DealershipUser();
     }
 
     public String getUsername(String[] userInfo) {

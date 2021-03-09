@@ -5,11 +5,22 @@ import java.util.Scanner;
 
 public class DealershipUser {
 
+
+    private Integer userId;
     private String username;
     private String userPassword;
     private String firstName;
     private String lastName;
     private Integer userType;
+
+    public DealershipUser(Integer userId, String username, String userPassword, String firstName, String lastName, Integer userType) {
+        this.userId = userId;
+        this.username = username;
+        this.userPassword = userPassword;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.userType = userType;
+    }
 
     public DealershipUser(String username, String userPassword, String firstName, String lastName, Integer userType) {
         this.username = username.toLowerCase();
@@ -20,6 +31,10 @@ public class DealershipUser {
     }
 
     public DealershipUser() {
+    }
+
+    public Integer getUserId() {
+        return userId;
     }
 
     public String getUsername() {

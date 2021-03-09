@@ -1,6 +1,7 @@
 package com.dealership;
 
 import com.dealership.database.ConnectionUtil;
+import com.dealership.model.DealershipUser;
 import com.dealership.service.UserService;
 import com.dealership.ui.Login;
 import org.slf4j.Logger;
@@ -25,12 +26,10 @@ public class Driver {
         log.info("Scanner created");
 
         Login login = new Login();
-        String [] userInfo = login.loginInformation(dealershipDatabase, scan, userService);
+        DealershipUser userInfo = login.loginInformation(dealershipDatabase, scan, userService);
 
 
-        for (String info: userInfo) {
-            System.out.println(info);
-        }
+
 
 
 
