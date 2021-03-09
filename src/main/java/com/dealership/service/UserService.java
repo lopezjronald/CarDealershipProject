@@ -1,6 +1,7 @@
 package com.dealership.service;
 
 import com.dealership.model.DealershipUser;
+import com.dealership.model.Offer;
 import com.dealership.model.Vehicle;
 
 import java.sql.Connection;
@@ -70,7 +71,7 @@ public class UserService {
     }
 
     public String askForVin(Scanner scanner) {
-        System.out.print("Please enter vehicle VIN number you would like to delete: ");
+        System.out.print("Enter Vehicle VIN#: ");
         return scanner.nextLine();
     }
 
@@ -90,13 +91,125 @@ public class UserService {
                     e.printStackTrace();
                     System.out.println("VIN " + vin + " does not exist in the system");
                 }
-            }
-            else
+            } else
                 System.out.println("You do not have permission to delete vehicles that belong to customers.");
 
         } else if (user.getUserType() == 2)
             System.out.println("Sorry. Only workers can remove vehicles from the inventory");
     }
+
+    public String checkIfVehicleExists(DealershipUser user, Connection connection, Scanner scanner) {
+        String vin = askForVin(scanner);
+        int vehicleUser = checkIfVehicleBelongsToCustomer(vin, connection);
+        if (vehicleUser == -1) {
+            System.out.println("Sorry, vehicle with Vin # " + vin + " does not exist");
+            return null;
+        } else if (vehicleUser != 2) {
+            return vin;
+        } else if (user.getUserType() == 2)
+            System.out.println("Sorry. This vehicle belongs to a customer.");
+        return null;
+    }
+
+    public Offer makeOffer(DealershipUser user, UserService userService, Scanner scanner, Connection connection) {
+        Offer newOffer;
+        String vin = checkIfVehicleExists(user, connection, scanner);
+        System.out.println("Hello " + userService.capitalizeString(user.getFirstName()) + ". Please enter your offer");
+        while (true) {
+            try {
+                double offerAmount = scanner.nextDouble();
+                newOffer = new Offer(offerAmount, user.getUserId(), vin);
+                break;
+
+            } catch (Exception e) {
+                System.out.println("You have entered an invalid entry. Please enter your offer amount.");
+                continue;
+            }
+        }
+        addOfferIntoDatabase(user, newOffer, connection);
+        return newOffer;
+    }
+
+    public void addOfferIntoDatabase(DealershipUser user, Offer offer, Connection connection) {
+        try {
+            String sql =
+                    "INSERT INTO offer " +
+                            "(offer_amount, user_id, vehicle_id) " +
+                            "VALUES " + "('" +
+                            offer.getOfferAmount() + "', '" +
+                            offer.getUserId() + "', '" +
+                            offer.getVehicleId() + "')";
+            Statement statement = connection.createStatement();
+            int i = statement.executeUpdate(sql);
+            System.out.println(capitalizeString(user.getFirstName()) + ", you have successfully made an offer of $" + offer.getOfferAmount() + " for Vehicle with VIN # " + offer.getVehicleId() + ".");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
+//    public String retrieveVehicleByVin(Connection connection, String vin) {
+//        try {
+//            String sql = "SELECT vehicle_vin FROM vehicle WHERE vehicle_vin = '" + vin + "'";
+//            Statement statement = connection.createStatement();
+//            ResultSet resultSet = statement.executeQuery(sql);
+//            while (resultSet.next()) {
+//                return resultSet.getString(1);
+//            }
+//        } catch (SQLException e) {
+//            System.out.println("Exception occurred");
+//        }
+//        return null;
+//    }
+
+//    public void addOffer(DealershipUser user, Connection connection, Scanner scanner) {
+//        if (!checkUserType(user)) {
+//            String vin = askForVin(scanner);
+//            int inventoryCount = inventoryCount(user, connection);
+//            String[] inventory = new String[inventoryCount + 1];
+//            String sql =
+//                    "SELECT vehicle_vin, vehicle_make, vehicle_model, vehicle_year " +
+//                            "FROM vehicle " +
+//                            "INNER JOIN dealership_user " +
+//                            "ON dealership_user.id = vehicle.owner_id " +
+//                            "INNER JOIN user_type " +
+//                            "ON user_type.id = dealership_user.user_type " +
+//                            "WHERE user_type.id = '" + EMPLOYEE_NUMBER +
+//                            "' OR user_type.id ='" + OWNER_NUMBER + "'";
+//            try {
+//                Statement statement = connection.createStatement();
+//                ResultSet resultSet = statement.executeQuery(sql);
+//                int count = 0;
+//                String description;
+//                while (resultSet.next()) {
+//                    description = resultSet.getString("vehicle_vin") +
+//                            " | Make: " + resultSet.getString("vehicle_make") +
+//                            " | Model: " + resultSet.getString("vehicle_model") +
+//                            " | Year: " + resultSet.getString("vehicle_year");
+//                    inventory[count++] = description;
+//                }
+//                inventory[count] = Integer.toString(inventoryCount);
+//            } catch (SQLException e) {
+//
+//            }
+//            int vehicleUser = checkIfVehicleBelongsToDealership(vin, connection);
+//            if (vehicleUser != 2) {
+//                try {
+//                    String sql =
+//                            "DELETE FROM vehicle WHERE vehicle_vin = '" + vin + "'";
+//
+//                    Statement statement = connection.createStatement();
+//                    statement.executeUpdate(sql);
+//                    System.out.println(capitalizeString(user.getFirstName()) + ", you have successfully entered an offer for vehicle with VIN #: " + vin + ".");
+//                } catch (SQLException e) {
+//                    e.printStackTrace();
+//                    System.out.println("VIN " + vin + " is not in the dealership lot.");
+//                }
+//            } else
+//                System.out.println("You do not have permission to delete vehicles that belong to customers.");
+//        }
+//    }
 
 
     public int save(DealershipUser user, Connection connection) {
@@ -271,5 +384,6 @@ public class UserService {
         }
         return -1;
     }
+
 
 }

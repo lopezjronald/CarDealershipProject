@@ -2,6 +2,7 @@ package com.dealership;
 
 import com.dealership.database.ConnectionUtil;
 import com.dealership.model.DealershipUser;
+import com.dealership.service.CustomerService;
 import com.dealership.service.UserService;
 import com.dealership.ui.Login;
 import org.slf4j.Logger;
@@ -18,25 +19,27 @@ public class Driver {
     public static void main(String[] args) throws SQLException {
 
         UserService userService = new UserService();
-        ConnectionUtil connection = new ConnectionUtil();
-        Connection dealershipDatabase = connection.getConnection();
-        Scanner scan = new Scanner(System.in);
+        ConnectionUtil connectionUtil = new ConnectionUtil();
+        Connection connection = connectionUtil.getConnection();
+        Scanner scanner = new Scanner(System.in);
         log.info("Scanner created");
 
 
 
         Login login = new Login();
-        DealershipUser userInfo = login.loginInformation(dealershipDatabase, scan, userService);
+        DealershipUser user = login.loginInformation(connection, scanner, userService);
+
+        CustomerService customerService = new CustomerService(user);
+        customerService.runCustomerService(scanner, user, connection);
 
 
 
-
-        userService.removeVehicle(userInfo, dealershipDatabase, scan);
-//        String result = userService.addVehicle(userInfo, dealershipDatabase, scan);
+//        userService.removeVehicle(userInfo, connection, scanner);
+//        String result = userService.addVehicle(userInfo, connection, scanner);
 //        System.out.println(result);
 //        if (userInfo.getFirstName() != null) {
-//            String[] customerInventory = userService.viewUserVehicles(userInfo, dealershipDatabase);
-//            String[] dealershipInventory = userService.viewDealershipInventory(userInfo, dealershipDatabase);
+//            String[] customerInventory = userService.viewUserVehicles(userInfo, connection);
+//            String[] dealershipInventory = userService.viewDealershipInventory(userInfo, connection);
 //            System.out.println(userInfo.getFirstName() + " owns: ");
 //            for (String eachVehicle: customerInventory) {
 //                System.out.println(eachVehicle);
