@@ -27,6 +27,10 @@ public class Driver {
 
         Login login = new Login();
         DealershipUser userInfo = login.loginInformation(dealershipDatabase, scan, userService);
+        String[] inventory = userService.retrieveInventory(userInfo, dealershipDatabase);
+        for (String eachVehicle: inventory) {
+            System.out.println(eachVehicle);
+        }
 
 
 

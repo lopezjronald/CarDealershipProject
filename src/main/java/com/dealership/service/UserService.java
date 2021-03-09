@@ -10,53 +10,7 @@ import java.sql.Statement;
 public class UserService {
 
     private final int EMPLOYEE_NUMBER = 1;
-    private final int CUSTOMER_NUMBER = 2;
     private final int OWNER_NUMBER = 3;
-
-    public String[] inventoryQuery(DealershipUser user, Connection connection) {
-        int inventoryAmount = 0;
-        String sql;
-        String sqlCount;
-
-        if (user.getUserType() == 2) {
-            sqlCount = "SELECT COUNT (*) FROM vehicle WHERE owner_id ='" + CUSTOMER_NUMBER + "'";
-            sql = "SELECT * FROM vehicle WHERE ower_id = '" + CUSTOMER_NUMBER + "'";
-        } else {
-            sqlCount = "SELECT COUNT (*) FROM vehicle WHERE ower_id = '" +
-                    EMPLOYEE_NUMBER + "' OR owner_id = '" +
-                    OWNER_NUMBER + "'";
-            sql = "SELECT * FROM vehicle WHERE ower_id = '" +
-                    EMPLOYEE_NUMBER + "' OR owner_id = '" +
-                    OWNER_NUMBER + "'";
-        }
-
-        try {
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(sqlCount);
-            inventoryAmount = resultSet.getInt(1);
-        } catch (SQLException e) {
-            System.out.println("Currently own " + inventoryAmount + " vehicles.");
-        }
-
-        String[] inventory = new String[inventoryAmount];
-
-
-        try {
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(sql);
-            int count = 0;
-            while (resultSet.next()) {
-                for (int i = count; i < inventory.length; i++) {
-                    inventory[i] = resultSet.getString(1);
-                }
-                count++;
-            }
-            return inventory;
-        } catch (SQLException e) {
-            return inventory;
-        }
-
-    }
 
     public int save(DealershipUser user, Connection connection) {
         try {
@@ -103,8 +57,54 @@ public class UserService {
         return new DealershipUser();
     }
 
-    public String getUsername(String[] userInfo) {
-        return userInfo[1];
+    private int inventoryCount(DealershipUser user, Connection connection) {
+        int inventoryCount = 0;
+        String sql;
+        if (user.getUserType() == EMPLOYEE_NUMBER || user.getUserType() == OWNER_NUMBER) {
+            sql = "SELECT COUNT(*) FROM vehicle WHERE owner_id = " +
+                    EMPLOYEE_NUMBER + " OR owner_id =" + OWNER_NUMBER;
+        } else {
+            sql = "SELECT COUNT(*) FROM vehicle WHERE owner_id = " +
+                    user.getUserId();
+        }
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sql);
+            while (resultSet.next()) {
+                return resultSet.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.out.println("At this time, you have " + inventoryCount + " that you own.");
+        }
+        return inventoryCount;
+    }
+
+
+    public String[] retrieveInventory(DealershipUser user, Connection connection) {
+        String[] inventory = new String[inventoryCount(user, connection)];
+        String sql;
+        if (user.getUserType() == EMPLOYEE_NUMBER || user.getUserType() == OWNER_NUMBER) {
+            sql = "SELECT * FROM vehicle WHERE owner_id = '" +
+                    EMPLOYEE_NUMBER + "' OR owner_id ='" + OWNER_NUMBER + "'";
+        } else {
+            sql = "SELECT * FROM vehicle WHERE owner_id = " + user.getUserId();
+        }
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sql);
+            int count = 0;
+            String description;
+            while (resultSet.next()) {
+                description =   "Vehicle VIN #: " + resultSet.getString("vehicle_vin") +
+                                " | Make: " + resultSet.getString("vehicle_make") +
+                                " | Model: " + resultSet.getString("vehicle_model") +
+                                " | Year: " + resultSet.getString("vehicle_year");
+                inventory[count++] = description;
+            }
+            return inventory;
+        } catch (SQLException e) {
+            return inventory;
+        }
     }
 
 }
