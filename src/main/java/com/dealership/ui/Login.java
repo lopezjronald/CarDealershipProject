@@ -40,11 +40,11 @@ public class Login {
                 response = scanner.nextLine();
                 if (response.equalsIgnoreCase("q")) {
                     System.out.println("Visit us soon!");
-                    return userInfo;
+                    return new DealershipUser();
                 } else if (response.equalsIgnoreCase("r")) {
                     Registration registration = new Registration();
                     registration.registerNewUser(connection, scanner, userService);
-                    return userInfo;
+                    return new DealershipUser();
                 } else {
                     continue;
                 }

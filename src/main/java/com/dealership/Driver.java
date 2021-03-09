@@ -27,9 +27,17 @@ public class Driver {
 
         Login login = new Login();
         DealershipUser userInfo = login.loginInformation(dealershipDatabase, scan, userService);
-        String[] inventory = userService.retrieveInventory(userInfo, dealershipDatabase);
-        for (String eachVehicle: inventory) {
-            System.out.println(eachVehicle);
+        if (userInfo.getFirstName() != null) {
+            String[] customerInventory = userService.viewUserVehicles(userInfo, dealershipDatabase);
+            String[] dealershipInventory = userService.viewDealershipInventory(userInfo, dealershipDatabase);
+            System.out.println(userInfo.getFirstName() + " owns: ");
+            for (String eachVehicle: customerInventory) {
+                System.out.println(eachVehicle);
+            }
+            System.out.println("Car Dealership Currently Has " + dealershipInventory[dealershipInventory.length-1] + " In Stock:");
+            for (int i = 0; i < dealershipInventory.length - 1; i++) {
+                System.out.println(dealershipInventory[i]);
+            }
         }
 
 

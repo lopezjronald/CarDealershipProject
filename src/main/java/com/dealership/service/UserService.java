@@ -9,8 +9,11 @@ import java.sql.Statement;
 
 public class UserService {
 
+    private final String EMPLOYEE = "employee";
+    private final String OWNER = "owner";
     private final int EMPLOYEE_NUMBER = 1;
     private final int OWNER_NUMBER = 3;
+
 
     public int save(DealershipUser user, Connection connection) {
         try {
@@ -59,14 +62,15 @@ public class UserService {
 
     private int inventoryCount(DealershipUser user, Connection connection) {
         int inventoryCount = 0;
-        String sql;
-        if (user.getUserType() == EMPLOYEE_NUMBER || user.getUserType() == OWNER_NUMBER) {
-            sql = "SELECT COUNT(*) FROM vehicle WHERE owner_id = " +
-                    EMPLOYEE_NUMBER + " OR owner_id =" + OWNER_NUMBER;
-        } else {
-            sql = "SELECT COUNT(*) FROM vehicle WHERE owner_id = " +
-                    user.getUserId();
-        }
+        String sql =
+                "SELECT COUNT(*) " +
+                        "FROM vehicle " +
+                        "INNER JOIN dealership_user " +
+                        "ON dealership_user.id = vehicle.owner_id " +
+                        "INNER JOIN user_type " +
+                        "ON user_type.id = dealership_user.user_type " +
+                        "WHERE user_type.id = '" + EMPLOYEE_NUMBER +
+                        "' OR user_type.id ='" + OWNER_NUMBER + "'";
         try {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sql);
@@ -79,32 +83,83 @@ public class UserService {
         return inventoryCount;
     }
 
-
-    public String[] retrieveInventory(DealershipUser user, Connection connection) {
-        String[] inventory = new String[inventoryCount(user, connection)];
-        String sql;
-        if (user.getUserType() == EMPLOYEE_NUMBER || user.getUserType() == OWNER_NUMBER) {
-            sql = "SELECT * FROM vehicle WHERE owner_id = '" +
-                    EMPLOYEE_NUMBER + "' OR owner_id ='" + OWNER_NUMBER + "'";
-        } else {
-            sql = "SELECT * FROM vehicle WHERE owner_id = " + user.getUserId();
-        }
+    public String[] viewDealershipInventory(DealershipUser user, Connection connection) {
+        int inventoryCount = inventoryCount(user, connection);
+        String[] inventory = new String[inventoryCount + 1];
+        String sql =
+                "SELECT vehicle_vin, vehicle_make, vehicle_model, vehicle_year " +
+                        "FROM vehicle " +
+                        "INNER JOIN dealership_user " +
+                        "ON dealership_user.id = vehicle.owner_id " +
+                        "INNER JOIN user_type " +
+                        "ON user_type.id = dealership_user.user_type " +
+                        "WHERE user_type.id = '" + EMPLOYEE_NUMBER +
+                        "' OR user_type.id ='" + OWNER_NUMBER + "'";
         try {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sql);
             int count = 0;
             String description;
             while (resultSet.next()) {
-                description =   "Vehicle VIN #: " + resultSet.getString("vehicle_vin") +
-                                " | Make: " + resultSet.getString("vehicle_make") +
-                                " | Model: " + resultSet.getString("vehicle_model") +
-                                " | Year: " + resultSet.getString("vehicle_year");
+                description = "Vehicle VIN #: " + resultSet.getString("vehicle_vin") +
+                        " | Make: " + resultSet.getString("vehicle_make") +
+                        " | Model: " + resultSet.getString("vehicle_model") +
+                        " | Year: " + resultSet.getString("vehicle_year");
                 inventory[count++] = description;
             }
+            inventory[count] = Integer.toString(inventoryCount);
             return inventory;
         } catch (SQLException e) {
             return inventory;
         }
+    }
+
+
+    private int getUserVehicleCount(DealershipUser user, Connection connection) {
+        int inventoryCount = 0;
+        if (user.getUserType() == 1 || user.getUserType() == 3) {
+            System.out.println("Sorry " + capitalizeString(user.getFirstName()) + ", you must be logged in as a customer to view your vehicles.");
+            return 0;
+        }
+        try {
+            String sql = "SELECT COUNT(*) FROM vehicle WHERE owner_id = " + user.getUserId();
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sql);
+            while (resultSet.next()) {
+                return resultSet.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.out.println("At this time, you have " + inventoryCount + " that you own.");
+        }
+        return inventoryCount;
+    }
+
+    public String[] viewUserVehicles(DealershipUser user, Connection connection) {
+        String[] inventory = new String[getUserVehicleCount(user, connection)];
+        if (inventory.length > 0) {
+            try {
+                String sql = "SELECT * FROM vehicle WHERE owner_id = " + user.getUserId();
+                Statement statement = connection.createStatement();
+                ResultSet resultSet = statement.executeQuery(sql);
+                int count = 0;
+                String description;
+                while (resultSet.next()) {
+                    description = "Vehicle VIN #: " + resultSet.getString("vehicle_vin") +
+                            " | Make: " + resultSet.getString("vehicle_make") +
+                            " | Model: " + resultSet.getString("vehicle_model") +
+                            " | Year: " + resultSet.getString("vehicle_year");
+                    inventory[count++] = description;
+                }
+                return inventory;
+            } catch (SQLException e) {
+                return inventory;
+            }
+        }
+        return inventory;
+    }
+
+    public String capitalizeString(String str) {
+        return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
 
 }
