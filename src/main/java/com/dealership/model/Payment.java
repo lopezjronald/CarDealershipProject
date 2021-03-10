@@ -7,26 +7,26 @@ public class Payment {
     private Integer id;
     private Double paymentAmount;
     private Double vehicleBalance;
-    private Integer purchasePriceId;
+    private Double purchasePrice;
     private String vehicleId;
     private Integer userId;
 
     public Payment() {
     }
 
-    public Payment(Double paymentAmount, Double vehicleBalance, Integer purchasePriceId, String vehicleId, Integer userId) {
+    public Payment(Double paymentAmount, Double vehicleBalance, Double purchasePrice, String vehicleId, Integer userId) {
         this.paymentAmount = paymentAmount;
         this.vehicleBalance = vehicleBalance;
-        this.purchasePriceId = purchasePriceId;
+        this.purchasePrice = purchasePrice;
         this.vehicleId = vehicleId;
         this.userId = userId;
     }
 
-    public Payment(Integer id, Double paymentAmount, Double vehicleBalance, Integer purchasePriceId, String vehicleId, Integer userId) {
+    public Payment(Integer id, Double paymentAmount, Double vehicleBalance, Double purchasePrice, String vehicleId, Integer userId) {
         this.id = id;
         this.paymentAmount = paymentAmount;
         this.vehicleBalance = vehicleBalance;
-        this.purchasePriceId = purchasePriceId;
+        this.purchasePrice = purchasePrice;
         this.vehicleId = vehicleId;
         this.userId = userId;
     }
@@ -55,12 +55,12 @@ public class Payment {
         this.vehicleBalance = vehicleBalance;
     }
 
-    public Integer getPurchasePriceId() {
-        return purchasePriceId;
+    public Double getPurchasePrice() {
+        return purchasePrice;
     }
 
-    public void setPurchasePriceId(Integer purchasePriceId) {
-        this.purchasePriceId = purchasePriceId;
+    public void setPurchasePrice(Double purchasePrice) {
+        this.purchasePrice = purchasePrice;
     }
 
     public String getVehicleId() {
@@ -84,12 +84,12 @@ public class Payment {
         if (this == o) return true;
         if (!(o instanceof Payment)) return false;
         Payment payment = (Payment) o;
-        return Objects.equals(getId(), payment.getId()) && Objects.equals(getPaymentAmount(), payment.getPaymentAmount()) && Objects.equals(getVehicleBalance(), payment.getVehicleBalance()) && Objects.equals(getPurchasePriceId(), payment.getPurchasePriceId()) && Objects.equals(getVehicleId(), payment.getVehicleId()) && Objects.equals(getUserId(), payment.getUserId());
+        return Objects.equals(getId(), payment.getId()) && Objects.equals(getPaymentAmount(), payment.getPaymentAmount()) && Objects.equals(getVehicleBalance(), payment.getVehicleBalance()) && Objects.equals(getPurchasePrice(), payment.getPurchasePrice()) && Objects.equals(getVehicleId(), payment.getVehicleId()) && Objects.equals(getUserId(), payment.getUserId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getPaymentAmount(), getVehicleBalance(), getPurchasePriceId(), getVehicleId(), getUserId());
+        return Objects.hash(getId(), getPaymentAmount(), getVehicleBalance(), getPurchasePrice(), getVehicleId(), getUserId());
     }
 
     @Override
@@ -98,7 +98,7 @@ public class Payment {
                 "id=" + id +
                 ", paymentAmount=" + paymentAmount +
                 ", vehicleBalance=" + vehicleBalance +
-                ", purchasPrice=" + purchasePriceId +
+                ", purchasPrice=" + purchasePrice +
                 ", vehicleId='" + vehicleId + '\'' +
                 ", userId=" + userId +
                 '}';

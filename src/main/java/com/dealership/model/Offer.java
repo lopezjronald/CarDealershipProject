@@ -5,20 +5,20 @@ import java.util.Objects;
 public class Offer {
 
     private Integer id;
-    private double offerAmount;
+    private Double offerAmount;
     private Integer userId;
     private String vehicleId;
 
     public Offer() {
     }
 
-    public Offer(double offerAmount, Integer userId, String vehicleId) {
+    public Offer(Double offerAmount, Integer userId, String vehicleId) {
         this.offerAmount = offerAmount;
         this.userId = userId;
         this.vehicleId = vehicleId;
     }
 
-    public Offer(Integer id, double offerAmount, Integer userId, String vehicleId) {
+    public Offer(Integer id, Double offerAmount, Integer userId, String vehicleId) {
         this.id = id;
         this.offerAmount = offerAmount;
         this.userId = userId;
@@ -33,11 +33,11 @@ public class Offer {
         this.id = id;
     }
 
-    public double getOfferAmount() {
+    public Double getOfferAmount() {
         return offerAmount;
     }
 
-    public void setOfferAmount(double offerAmount) {
+    public void setOfferAmount(Double offerAmount) {
         this.offerAmount = offerAmount;
     }
 

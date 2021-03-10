@@ -40,13 +40,13 @@ public class CustomerService {
                     Offer offer = userService.makeOffer(user, userService, scanner, connection);
                     break;
                 case 4:
-                    break;
+                    userService.makePayment(user, connection, scanner);
                 default:
                     System.out.println("You have entered an invalid entry");
                     continue;
             }
 
-            if (userOption == 4) {
+            if (userOption == 5) {
                 break;
             }
         }
@@ -64,7 +64,8 @@ public class CustomerService {
             System.out.println("1. Show Dealership Inventory");
             System.out.println("2. Show Cars You Own");
             System.out.println("3. Make an Offer");
-            System.out.println("4. Exit");
+            System.out.println("4. Make a Payment");
+            System.out.println("5. Exit");
             try {
                 return scanner.nextInt();
             } catch (Exception e) {

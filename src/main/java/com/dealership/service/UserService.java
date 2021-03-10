@@ -93,18 +93,18 @@ public class UserService {
             System.out.println("Sorry. Only workers can remove vehicles from the inventory");
     }
 
-    /************************
-     *
-     * Offer Methods
-     *
-     *************************/
+    /****************************
+     *                          *
+     *    Offer Methods         *
+     *                          *
+     ***************************/
 
     public Payment acceptOffer(DealershipUser user, Scanner scanner, Connection connection) {
         System.out.println("Accepting Offer:");
 
-        String vehicleId = null;
+        String vehicleId = "";
         int monthlyPeriodPayments = askPaymentPeriods(scanner), offerId = askForOfferId(scanner);
-        Double vehicleBalance = 0.0, paymentAmount = 0.0;
+        Double vehicleBalance = 0.0, paymentAmount = 0.0, purchasePrice = 0.0;
         Integer userId = 0;
 
         try {
@@ -112,16 +112,61 @@ public class UserService {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sql);
             while (resultSet.next()) {
-                vehicleBalance = resultSet.getDouble("offer_amount");
-                paymentAmount = vehicleBalance/monthlyPeriodPayments;
+                purchasePrice = resultSet.getDouble("offer_amount");
                 vehicleId = resultSet.getString("vehicle_id");
                 userId = resultSet.getInt("user_id");
             }
         } catch (SQLException e) {
             return new Payment();
         }
-        return new Payment(paymentAmount, vehicleBalance, offerId, vehicleId, userId);
+
+        double vehiclePayment = askForVehiclePayment(scanner);
+
+        vehicleBalance = purchasePrice - vehiclePayment ;
+
+        Payment payment = new Payment(vehiclePayment, vehicleBalance, purchasePrice, vehicleId, userId);
+
+        addPaymentToDatabase(payment, connection);
+
+        removeAllOffers(userId, vehicleId, connection);
+
+        System.out.println("Your monthly payments will be " + (double) (vehicleBalance/monthlyPeriodPayments));
+
+        return payment;
     }
+
+    public void removeAllOffers(Integer userId, String vin, Connection connection) {
+        try {
+            String sql =
+                    "DELETE FROM offer WHERE vehicle_id = '" + vin + "'";
+
+            Statement statement = connection.createStatement();
+            statement.executeUpdate(sql);
+            System.out.println("You have successfully removed offers with vehicle VIN # " + vin + ".");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void addPaymentToDatabase(Payment payment, Connection connection) {
+        try {
+            String sql =
+                    "INSERT INTO payment " +
+                            "(payment_amount, vehicle_balance, purchase_price, vehicle_id, owner_id) " +
+                            "VALUES " + "('" +
+                            payment.getPaymentAmount() + "', '" +
+                            payment.getVehicleBalance() + "', '" +
+                            payment.getPurchasePrice() + "', '" +
+                            payment.getVehicleId() + "', '" +
+                            payment.getUserId() + "')";
+            Statement statement = connection.createStatement();
+            int i = statement.executeUpdate(sql);
+            System.out.println("You have successfully added a payment to the system.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public int askForOfferId(Scanner scanner) {
         int id = -1;
@@ -154,6 +199,20 @@ public class UserService {
             }
 
         }
+    }
+
+    public double askForVehiclePayment(Scanner scanner) {
+        double vehiclePayment = 0.0;
+        System.out.print("Please enter amount you will pay today: ");
+        while (true) {
+            try {
+                vehiclePayment = Double.parseDouble(scanner.nextLine());
+                break;
+            } catch (Exception e) {
+                System.out.println("You have entered an invalid entry. Please enter your down payment");
+            }
+        }
+        return vehiclePayment;
     }
 
     public Offer makeOffer(DealershipUser user, UserService userService, Scanner scanner, Connection connection) {
@@ -233,10 +292,10 @@ public class UserService {
         return allOffers;
     }
 
-    /************************
-     *
-     * Registration Methods
-     *
+    /*************************
+     *                       *
+     * Registration Methods  *
+     *                       *
      *************************/
 
     public int save(DealershipUser user, Connection connection) {
@@ -261,11 +320,11 @@ public class UserService {
         }
     }
 
-    /************************
-     *
-     * Login Methods
-     *
-     *************************/
+    /*******************
+     *                 *
+     * Login Methods   *
+     *                 *
+     ******************/
 
     public DealershipUser loginQuery(Connection connection, String username, String password) {
         try {
@@ -291,10 +350,54 @@ public class UserService {
     }
 
     /************************
-     *
-     * Dealership Methods
-     *
-     *************************/
+     *                      *
+     * Dealership Methods   *
+     *                      *
+     ***********************/
+
+
+    public void lookUpCustomerPaymentHistory(Connection connection, Scanner scanner){
+        String vin = askForVin(scanner);
+        Integer customerId = askForCustomerId(scanner);
+        try {
+            String sql = "SELECT payment_amount, vehicle_balance FROM payment WHERE vehicle_id = '" + vin + "' AND owner_id = " + customerId + " ORDER BY id DESC";
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sql);
+            int count = 0;
+            while (resultSet.next()) {
+                if (count ==0) {
+                    System.out.println("Payment History:");
+                    for (int i = 0; i < 50; i++) {
+                        System.out.print("*");
+                    }
+                    System.out.println();
+                    System.out.print("Latest Payment: " + resultSet.getDouble("payment_amount"));
+                    System.out.println(" | Current Balance: " + resultSet.getDouble("vehicle_balance"));
+                    for (int i = 0; i < 50; i++) {
+                        System.out.print("*");
+                    }
+                    System.out.println();
+                    count++;
+                } else {
+                    System.out.print("Payment: " + resultSet.getDouble("payment_amount"));
+                    System.out.println(" | Balance: " + resultSet.getDouble("vehicle_balance"));
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("You do not have any payments with a vehicle with VIN #: " + vin);;
+        }
+    }
+
+    public int askForCustomerId(Scanner scanner) {
+        System.out.print("Enter Customer ID: ");
+        while (true) {
+            try {
+                return Integer.parseInt(scanner.nextLine());
+            } catch (Exception e) {
+                System.out.print("Sorry, that was an invalid entry. Please enter customer ID: ");
+            }
+        }
+    }
 
     private int inventoryCount(DealershipUser user, Connection connection) {
         int inventoryCount = 0;
@@ -351,10 +454,87 @@ public class UserService {
     }
 
     /************************
-     *
-     * Customer Methods
-     *
-     *************************/
+     *                      *
+     * Customer Methods     *
+     *                      *
+     ***********************/
+
+    public void viewAllMyPaymentsByVin(DealershipUser user, Connection connection, Scanner scanner){
+        String vin = askForVin(scanner);
+        try {
+            String sql = "SELECT payment_amount, vehicle_balance FROM payment WHERE vehicle_id = '" + vin + "' AND owner_id = " + user.getUserId() + " ORDER BY id DESC";
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sql);
+            int count = 0;
+            while (resultSet.next()) {
+                if (count ==0) {
+                    System.out.println("Payment History:");
+                    for (int i = 0; i < 50; i++) {
+                        System.out.print("*");
+                    }
+                    System.out.println();
+                    System.out.print("Latest Payment: " + resultSet.getDouble("payment_amount"));
+                    System.out.println(" | Current Balance: " + resultSet.getDouble("vehicle_balance"));
+                    for (int i = 0; i < 50; i++) {
+                        System.out.print("*");
+                    }
+                    System.out.println();
+                    count++;
+                } else {
+                    System.out.print("Payment: " + resultSet.getDouble("payment_amount"));
+                    System.out.println(" | Balance: " + resultSet.getDouble("vehicle_balance"));
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("You do not have any payments with a vehicle with VIN #: " + vin);;
+        }
+    }
+
+    public void makePayment(DealershipUser user, Connection connection, Scanner scanner) {
+        String[] vehicles = viewUserVehicles(user, connection);
+        if (vehicles.length == 0) {
+            System.out.println("Unable to make payment. You currently own " + vehicles.length + " vehicles.");
+        } else {
+            String vin = askForVin(scanner);
+            double vehiclePayment = askForVehiclePayment(scanner);
+            double currentBalance = getCurrentBalance(user, connection);
+            double purchasePrice = getPurchasePrice(user, connection);
+            double newBalance = currentBalance - vehiclePayment;
+            Payment newPayment = new Payment(vehiclePayment, newBalance, purchasePrice, vin, user.getUserId());
+            addPaymentToDatabase(newPayment, connection);
+        }
+    }
+
+    public double getCurrentBalance(DealershipUser user, Connection connection) {
+        double currentBalance = 0.0;
+        try {
+            String sql = "SELECT MIN(vehicle_balance) FROM payment WHERE owner_id = " + user.getUserId();
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sql);
+            while (resultSet.next()) {
+                currentBalance = resultSet.getDouble(1);
+            }
+        } catch (SQLException e) {
+            return currentBalance;
+        }
+        return currentBalance;
+    }
+
+    public double getPurchasePrice(DealershipUser user, Connection connection) {
+        double purchasePrice = 0.0;
+        try {
+            String sql = "SELECT purchase_price FROM payment WHERE owner_id = " + user.getUserId();
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sql);
+            while (resultSet.next()) {
+                purchasePrice = resultSet.getDouble("purchase_price");
+            }
+        } catch (SQLException e) {
+            return purchasePrice;
+        }
+        return purchasePrice;
+    }
+
 
     private int getUserVehicleCount(DealershipUser user, Connection connection) {
         int inventoryCount = 0;
@@ -399,11 +579,11 @@ public class UserService {
         return inventory;
     }
 
-    /************************
-     *
-     * Useful Repetitive Methods
-     *
-     *************************/
+    /*****************************
+     *                           *
+     * Useful Repetitive Methods *
+     *                           *
+     ****************************/
 
     public String capitalizeString(String str) {
         return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
@@ -453,7 +633,7 @@ public class UserService {
         return scanner.nextLine();
     }
 
-    public int askPaymentPeriods(Scanner scanner){
+    public int askPaymentPeriods(Scanner scanner) {
         int monthlyPeriods = -1;
         System.out.print("Enter Total Payment Periods: ");
         while (true) {
