@@ -27,7 +27,7 @@ public class Login {
 
         boolean continueToLogin = true;
         String response;
-        DealershipUser userInfo;
+        DealershipUser user;
         while (continueToLogin) {
             System.out.println("Please press any key to login or press \"q\" to quit");
             String choice = scanner.nextLine();
@@ -36,9 +36,9 @@ public class Login {
             }
             String username = askUsername(scanner);
             String password = askPassword(scanner);
-            userInfo = userService.loginQuery(connection, username, password);
+            user = userService.loginQuery(connection, username, password);
 
-            if (userInfo.getFirstName() == null) {
+            if (user.getFirstName() == null) {
                 System.out.println("Sorry. You have entered an invalid username or password.");
                 System.out.print("Press any key to continue, \"q\" to quit or \"r\" to register: ");
                 response = scanner.nextLine();
@@ -46,13 +46,12 @@ public class Login {
                     return new DealershipUser();
                 } else if (response.equalsIgnoreCase("r")) {
                     Registration registration = new Registration();
-                    registration.registerNewUser(connection, scanner, userService);
-                    return new DealershipUser();
+                    user = registration.registerNewUser(connection, scanner, userService);
                 } else {
                     continue;
                 }
             }
-            return userInfo;
+            return user;
         }
         return new DealershipUser();
     }

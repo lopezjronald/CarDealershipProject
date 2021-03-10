@@ -73,20 +73,21 @@ public class Registration {
         return CUSTOMER;
     }
 
-    public void registerNewUser(Connection dealershipDatabase, Scanner scanner, UserService userService) {
+    public DealershipUser registerNewUser(Connection connection, Scanner scanner, UserService userService) {
         greeting();
+        DealershipUser user;
         String userResponse = userLogin(scanner);
         if (userResponse.equals("q")) {
-            System.out.println("Visit us soon!");
+            return new DealershipUser();
         } else {
-            DealershipUser user = createUser(scanner, userResponse);
-            if (user.getFirstName() == null) {
-                System.out.println("Visit us soon!");
-            } else {
-                int result = userService.save(user, dealershipDatabase);
+            user = createUser(scanner, userResponse);
+            if (user.getFirstName() != null) {
+                int result = userService.save(user, connection);
                 System.out.println(result);
+                return user;
             }
         }
+        return new DealershipUser();
     }
 
 }

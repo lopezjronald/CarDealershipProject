@@ -30,11 +30,11 @@ public class UserService {
         while (true) {
             try {
                 vehicleYear = Integer.parseInt(scanner.nextLine());
+                break;
             } catch (Exception e) {
                 System.out.println("Sorry, that is an invalid entry. Please enter the year for the vehicle.");
                 continue;
             }
-            break;
         }
 
         Integer employeeId = user.getUserId();
@@ -196,7 +196,7 @@ public class UserService {
 
                 Statement statement = connection.createStatement();
                 statement.executeUpdate(sql);
-                System.out.println(capitalizeString(user.getFirstName()) + ", you have successfully removed the offer with ID #: " + offerId + ".");
+                System.out.println(capitalizeString(user.getFirstName()) + ", you have successfully removed offer #: " + offerId + ".");
             } catch (SQLException e) {
                 e.printStackTrace();
                 System.out.println("Offer Id:  " + offerId + " does not exist in the system");

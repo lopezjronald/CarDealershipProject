@@ -45,14 +45,10 @@ public class Driver {
                     customerService.runCustomerService(user, connection);
                 }
 
-                System.out.println("Press any key to continue or \"q\" to quit");
-                if (scanner.nextLine().equalsIgnoreCase("q")) {
-                    if (userService.checkIfUserIsEmployeeOrOwner(user)) {
-                        userService.goodByeEmployee();
-                    } else
-                        userService.goodByeCustomer();
+                if (scanner.nextLine().equalsIgnoreCase("q"))
                     break;
-                }
+                else
+                    continue;
 
             } else
                 userService.goodByeCustomer();
