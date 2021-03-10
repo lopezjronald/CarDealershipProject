@@ -29,11 +29,9 @@ public class UserService {
 
         while (true) {
             try {
-                vehicleYear = scanner.nextInt();
-                scanner.nextLine();
+                vehicleYear = Integer.parseInt(scanner.nextLine());
             } catch (Exception e) {
                 System.out.println("Sorry, that is an invalid entry. Please enter the year for the vehicle.");
-                scanner.nextLine();
                 continue;
             }
             break;
@@ -100,6 +98,7 @@ public class UserService {
      ***************************/
 
     public Payment acceptOffer(DealershipUser user, Scanner scanner, Connection connection) {
+
         System.out.println("Accepting Offer:");
 
         String vehicleId = "";
@@ -129,6 +128,8 @@ public class UserService {
         addPaymentToDatabase(payment, connection);
 
         removeAllOffers(userId, vehicleId, connection);
+
+        updateOwner(user);
 
         System.out.println("Your monthly payments will be " + (double) (vehicleBalance/monthlyPeriodPayments));
 
@@ -167,6 +168,9 @@ public class UserService {
         }
     }
 
+    public void updateOwner(DealershipUser user) {
+
+    }
 
     public int askForOfferId(Scanner scanner) {
         int id = -1;
@@ -218,19 +222,23 @@ public class UserService {
     public Offer makeOffer(DealershipUser user, UserService userService, Scanner scanner, Connection connection) {
         Offer newOffer;
         String vin = checkIfVehicleExists(user, connection, scanner);
-        System.out.println("Hello " + userService.capitalizeString(user.getFirstName()) + ". Please enter your offer");
-        while (true) {
-            try {
-                double offerAmount = scanner.nextDouble();
-                newOffer = new Offer(offerAmount, user.getUserId(), vin);
-                break;
-            } catch (Exception e) {
-                System.out.println("You have entered an invalid entry. Please enter your offer amount.");
-                continue;
+        int isCustomerVehicle = checkIfVehicleBelongsToCustomer(vin, connection);
+        if (vin != null && isCustomerVehicle != -1) {
+            System.out.println("Please enter your offer");
+            while (true) {
+                try {
+                    double offerAmount = Double.parseDouble(scanner.nextLine());
+                    newOffer = new Offer(offerAmount, user.getUserId(), vin);
+                    break;
+                } catch (Exception e) {
+                    System.out.println("You have entered an invalid entry. Please enter your offer amount.");
+                    continue;
+                }
             }
+            addOfferIntoDatabase(user, newOffer, connection);
+            return newOffer;
         }
-        addOfferIntoDatabase(user, newOffer, connection);
-        return newOffer;
+        return null;
     }
 
     public void addOfferIntoDatabase(DealershipUser user, Offer offer, Connection connection) {
@@ -268,12 +276,12 @@ public class UserService {
         return inventoryCount;
     }
 
-    public Offer[] retrieveOffers(Connection connection, Scanner scanner, UserService userService) {
+    public Offer[] showAllOffers(Connection connection, Scanner scanner) {
         String vin = askForVin(scanner);
         Offer[] allOffers = new Offer[retrieveOfferCount(connection, scanner, vin)];
         if (allOffers.length > 0) {
             try {
-                String sql = "SELECT id, offer_amount, user_id, vehicle_id FROM offer WHERE vehicle_id = '" + vin + "'";
+                String sql = "SELECT id, offer_amount, user_id, vehicle_id FROM offer WHERE vehicle_id = '" + vin + "' ORDER BY offer_amount DESC";
                 Statement statement = connection.createStatement();
                 ResultSet resultSet = statement.executeQuery(sql);
                 int count = 0;
@@ -356,7 +364,7 @@ public class UserService {
      ***********************/
 
 
-    public void lookUpCustomerPaymentHistory(Connection connection, Scanner scanner){
+    public void getCustomerPaymentHistory(Connection connection, Scanner scanner){
         String vin = askForVin(scanner);
         Integer customerId = askForCustomerId(scanner);
         try {
@@ -365,8 +373,8 @@ public class UserService {
             ResultSet resultSet = statement.executeQuery(sql);
             int count = 0;
             while (resultSet.next()) {
-                if (count ==0) {
-                    System.out.println("Payment History:");
+                if (count == 0) {
+                    System.out.println("\n\nPayment History:");
                     for (int i = 0; i < 50; i++) {
                         System.out.print("*");
                     }
@@ -459,7 +467,7 @@ public class UserService {
      *                      *
      ***********************/
 
-    public void viewAllMyPaymentsByVin(DealershipUser user, Connection connection, Scanner scanner){
+    public void viewPaymentHistoryByVin(DealershipUser user, Connection connection, Scanner scanner){
         String vin = askForVin(scanner);
         try {
             String sql = "SELECT payment_amount, vehicle_balance FROM payment WHERE vehicle_id = '" + vin + "' AND owner_id = " + user.getUserId() + " ORDER BY id DESC";
@@ -606,7 +614,11 @@ public class UserService {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sql);
             while (resultSet.next()) {
-                return resultSet.getInt(1);
+                int userType = resultSet.getInt(1);
+                if (userType == 2)
+                    return -1;
+                else
+                    return userType;
             }
         } catch (SQLException e) {
             System.out.println("Something went wrong");
@@ -629,7 +641,7 @@ public class UserService {
     }
 
     public String askForVin(Scanner scanner) {
-        System.out.print("Enter Vehicle VIN#: ");
+        System.out.print("\n\nEnter Vehicle VIN#: ");
         return scanner.nextLine();
     }
 
@@ -645,6 +657,14 @@ public class UserService {
             }
         }
         return monthlyPeriods;
+    }
+
+    public void goodByeCustomer() {
+        System.out.println("Visit us soon!");
+    }
+
+    public void goodByeEmployee() {
+        System.out.println("You have successfully logged out.");
     }
 
 }

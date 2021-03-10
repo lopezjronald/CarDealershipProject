@@ -8,16 +8,60 @@ import java.util.Scanner;
 
 public class EmployeeService {
 
-    private UserService userService;
-    private DealershipUser user;
+    Scanner scanner;
+    private final UserService userService;
+    private final DealershipUser user;
 
-    public EmployeeService(UserService userService, DealershipUser user) {
+    public EmployeeService(UserService userService, DealershipUser user, Scanner scanner) {
         this.userService = userService;
         this.user = user;
+        this.scanner = scanner;
     }
 
-    public void displayOffers(Connection connection, Scanner scanner, UserService userService) {
-        Offer[] allOffers = userService.retrieveOffers(connection, scanner, userService);
+    public void runEmployeeService(DealershipUser user, Connection connection) {
+        employeeGreeting(user);
+        while (true) {
+            int userOption;
+            try {
+                userOption = showEmployeeMenu(user);
+            } catch (Exception e) {
+                System.out.println("That is an invalid entry");
+                continue;
+            }
+            switch (userOption) {
+                case 1:
+                    displayOffers(connection, userService);
+                    break;
+                case 2:
+                    userService.acceptOffer(user, scanner, connection);
+                    break;
+                case 3:
+                    userService.removeVehicleFromOffers(user, connection, scanner);
+                    break;
+                case 4:
+                    userService.removeVehicleFromInventory(user, connection, scanner);
+                    break;
+                case 5:
+                    userService.addVehicle(user, connection, scanner);
+                    break;
+                case 6:
+                    userService.getCustomerPaymentHistory(connection, scanner);
+                    break;
+                case 7:
+                    break;
+                default:
+                    System.out.println("You have entered an invalid entry.\n");
+                    continue;
+            }
+
+            if (userOption == 7) {
+                break;
+            }
+        }
+    }
+
+    public void displayOffers(Connection connection, UserService userService) {
+        Offer[] allOffers = userService.showAllOffers(connection, scanner);
         if (allOffers.length == 0) {
             System.out.println("There are no offers for the vehicle you requested.");
         } else {
@@ -30,45 +74,44 @@ public class EmployeeService {
                 System.out.println(" | Customer #: " + eachOffer.getUserId());
             }
         }
-
-        chooseFromOfferMenu(allOffers, scanner, user, connection);
-
-
+//       chooseFromEmployeeMenu(allOffers, user, connection);
     }
 
-    public int offerMenu(Scanner scanner) {
-        int userChoice = -1;
-        System.out.println("Choose one of the following:");
-        System.out.println("1: Accept an offer");
-        System.out.println("2. Reject an offer");
-        System.out.println("3. Exit");
+
+    public int showEmployeeMenu(DealershipUser user) {
         while (true) {
+            System.out.println();
+            String welcome = "Welcome to the Employee Menu";
+            System.out.println(welcome);
+            for (int i = 0; i <= welcome.length(); i++) {
+                System.out.print("*");
+            }
+            System.out.println();
+            System.out.println("1: See all offers");
+            System.out.println("2: Accept an offer");
+            System.out.println("3. Reject an offer");
+            System.out.println("4. Remove a vehicle from the lot");
+            System.out.println("5. Add a vehicle from the lot");
+            System.out.println("6. View Payment History of a Customer");
+            System.out.println("7. Exit");
+            System.out.println();
+            System.out.print("--> ");
             try {
-                String stringUserChoice = scanner.nextLine();
-                userChoice = Integer.parseInt(stringUserChoice);
-                break;
+                return Integer.parseInt(scanner.nextLine());
             } catch (Exception e) {
-                System.out.println("That was an invalid entry. Please choose of the following.");
+                System.out.println("You have entered an invalid entry or press \"q\" to exit or any key to continue.");
+                String option = scanner.nextLine();
+                if (option.equalsIgnoreCase("q")) {
+                    return -1;
+                } else
+                    continue;
             }
         }
-        return userChoice;
     }
 
-    public void chooseFromOfferMenu(Offer[] allOffers, Scanner scanner, DealershipUser user, Connection connection) {
-        int userChoice = offerMenu(scanner);
-        switch (userChoice) {
-            case 1:
-                System.out.println("Accept Offer Function");
-                break;
-            case 2:
-                userService.removeVehicleFromOffers(user, connection, scanner);
-                break;
-            case 3:
-                System.out.println("Exit");
-                break;
-            default:
-                System.out.println("Default");
-        }
+    private void employeeGreeting(DealershipUser user) {
+        System.out.println();
+        System.out.println("Hello " + userService.capitalizeString(user.getFirstName()) + "!");
     }
 
 }

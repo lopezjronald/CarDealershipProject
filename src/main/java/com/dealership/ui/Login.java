@@ -29,6 +29,11 @@ public class Login {
         String response;
         DealershipUser userInfo;
         while (continueToLogin) {
+            System.out.println("Please press any key to login or press \"q\" to quit");
+            String choice = scanner.nextLine();
+            if (choice.equalsIgnoreCase("q")) {
+                return new DealershipUser();
+            }
             String username = askUsername(scanner);
             String password = askPassword(scanner);
             userInfo = userService.loginQuery(connection, username, password);
@@ -38,7 +43,6 @@ public class Login {
                 System.out.print("Press any key to continue, \"q\" to quit or \"r\" to register: ");
                 response = scanner.nextLine();
                 if (response.equalsIgnoreCase("q")) {
-                    System.out.println("Visit us soon!");
                     return new DealershipUser();
                 } else if (response.equalsIgnoreCase("r")) {
                     Registration registration = new Registration();

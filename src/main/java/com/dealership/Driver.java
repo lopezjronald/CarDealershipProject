@@ -2,7 +2,7 @@ package com.dealership;
 
 import com.dealership.database.ConnectionUtil;
 import com.dealership.model.DealershipUser;
-import com.dealership.model.Payment;
+import com.dealership.service.CustomerService;
 import com.dealership.service.EmployeeService;
 import com.dealership.service.UserService;
 import com.dealership.ui.Login;
@@ -27,14 +27,36 @@ public class Driver {
 
 
         Login login = new Login();
-        DealershipUser user = login.loginInformation(connection, scanner, userService);
-        if (user.getUsername() != null) {
-            if (userService.checkIfUserIsEmployeeOrOwner(user)) {
-                System.out.println("EMPLOYEE MENU");
-            } else {
-                System.out.println("Customer Menu");
+        boolean runProgram = true;
+        while (runProgram) {
+            String title = "Dealership Service";
+            System.out.println(title);
+            for (int i = 0; i <= title.length(); i++) {
+                System.out.print("*");
             }
+            System.out.println();
+            DealershipUser user = login.loginInformation(connection, scanner, userService);
+            if (user.getUsername() != null) {
+                if (userService.checkIfUserIsEmployeeOrOwner(user)) {
+                    EmployeeService employeeService = new EmployeeService(userService, user, scanner);
+                    employeeService.runEmployeeService(user, connection);
+                } else {
+                    CustomerService customerService = new CustomerService(user, scanner);
+                    customerService.runCustomerService(user, connection);
+                }
 
+                System.out.println("Press any key to continue or \"q\" to quit");
+                if (scanner.nextLine().equalsIgnoreCase("q")) {
+                    if (userService.checkIfUserIsEmployeeOrOwner(user)) {
+                        userService.goodByeEmployee();
+                    } else
+                        userService.goodByeCustomer();
+                    break;
+                }
+
+            } else
+                userService.goodByeCustomer();
+                runProgram = false;
         }
 
     }
