@@ -28,14 +28,14 @@ public class Driver {
 
         Login login = new Login();
         DealershipUser user = login.loginInformation(connection, scanner, userService);
-        userService.lookUpCustomerPaymentHistory(connection, scanner);
+        if (user.getUsername() != null) {
+            if (userService.checkIfUserIsEmployeeOrOwner(user)) {
+                System.out.println("EMPLOYEE MENU");
+            } else {
+                System.out.println("Customer Menu");
+            }
 
-
-//        EmployeeService employeeService = new EmployeeService(userService, user);
-//        employeeService.displayOffers(connection, scanner, userService);
-//        UserService test = new UserService();
-//        Payment paymentTest = userService.acceptOffer(user, scanner, connection);
-//        System.out.println(paymentTest.toString());
+        }
 
     }
 }

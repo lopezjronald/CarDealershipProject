@@ -44,7 +44,7 @@ public class UserService {
     }
 
     public String addVehicle(DealershipUser user, Connection connection, Scanner scanner) {
-        if (checkUserType(user)) {
+        if (checkIfUserIsEmployeeOrOwner(user)) {
             Vehicle newVehicle = getVehicleInformation(scanner, user);
 
             try {
@@ -71,7 +71,7 @@ public class UserService {
     }
 
     public void removeVehicleFromInventory(DealershipUser user, Connection connection, Scanner scanner) {
-        if (checkUserType(user)) {
+        if (checkIfUserIsEmployeeOrOwner(user)) {
             String vin = askForVin(scanner);
             int vehicleUser = checkIfVehicleBelongsToCustomer(vin, connection);
             if (vehicleUser != 2) {
@@ -184,7 +184,7 @@ public class UserService {
     }
 
     public void removeVehicleFromOffers(DealershipUser user, Connection connection, Scanner scanner) {
-        if (checkUserType(user)) {
+        if (checkIfUserIsEmployeeOrOwner(user)) {
             Integer offerId = askForOfferId(scanner);
             try {
                 String sql =
@@ -589,7 +589,7 @@ public class UserService {
         return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
     }
 
-    public boolean checkUserType(DealershipUser user) {
+    public boolean checkIfUserIsEmployeeOrOwner(DealershipUser user) {
         return (user.getUserType() == EMPLOYEE_NUMBER || user.getUserType() == OWNER_NUMBER);
     }
 
