@@ -2,6 +2,7 @@ package com.dealership;
 
 import com.dealership.database.ConnectionUtil;
 import com.dealership.model.DealershipUser;
+import com.dealership.model.Payment;
 import com.dealership.service.EmployeeService;
 import com.dealership.service.UserService;
 import com.dealership.ui.Login;
@@ -27,8 +28,11 @@ public class Driver {
 
         Login login = new Login();
         DealershipUser user = login.loginInformation(connection, scanner, userService);
-        EmployeeService employeeService = new EmployeeService(userService, user);
-        employeeService.displayOffers(connection, scanner, userService);
+//        EmployeeService employeeService = new EmployeeService(userService, user);
+//        employeeService.displayOffers(connection, scanner, userService);
+        UserService test = new UserService();
+        Payment paymentTest = userService.acceptOffer(user, scanner, connection);
+        System.out.println(paymentTest.toString());
 
     }
 }

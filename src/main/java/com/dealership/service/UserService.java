@@ -2,6 +2,7 @@ package com.dealership.service;
 
 import com.dealership.model.DealershipUser;
 import com.dealership.model.Offer;
+import com.dealership.model.Payment;
 import com.dealership.model.Vehicle;
 
 import java.sql.Connection;
@@ -98,27 +99,28 @@ public class UserService {
      *
      *************************/
 
-    public void acceptOffer(DealershipUser user, Scanner scanner, Connection connection) {
+    public Payment acceptOffer(DealershipUser user, Scanner scanner, Connection connection) {
+        System.out.println("Accepting Offer:");
+
+        String vehicleId = null;
+        int monthlyPeriodPayments = askPaymentPeriods(scanner), offerId = askForOfferId(scanner);
+        Double vehicleBalance = 0.0, paymentAmount = 0.0;
+        Integer userId = 0;
+
         try {
-            String sql = "SELECT * FROM dealership_user WHERE username = '" +
-                    username + "' AND user_password = '" +
-                    password + "'";
+            String sql = "SELECT id, offer_amount, user_id, vehicle_id FROM offer WHERE id = " + offerId;
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sql);
             while (resultSet.next()) {
-                Integer userId = resultSet.getInt(1);
-                // username;
-                // password;
-                String firstName = resultSet.getString(4);
-                String lastName = resultSet.getString(5);
-                Integer userTypeId = resultSet.getInt(6);
-                return new DealershipUser(userId, username, password, firstName, lastName, userTypeId);
-
+                vehicleBalance = resultSet.getDouble("offer_amount");
+                paymentAmount = vehicleBalance/monthlyPeriodPayments;
+                vehicleId = resultSet.getString("vehicle_id");
+                userId = resultSet.getInt("user_id");
             }
         } catch (SQLException e) {
-//            return new DealershipUser();
+            return new Payment();
         }
-//        return new DealershipUser();
+        return new Payment(paymentAmount, vehicleBalance, offerId, vehicleId, userId);
     }
 
     public int askForOfferId(Scanner scanner) {
@@ -449,6 +451,20 @@ public class UserService {
     public String askForVin(Scanner scanner) {
         System.out.print("Enter Vehicle VIN#: ");
         return scanner.nextLine();
+    }
+
+    public int askPaymentPeriods(Scanner scanner){
+        int monthlyPeriods = -1;
+        System.out.print("Enter Total Payment Periods: ");
+        while (true) {
+            try {
+                monthlyPeriods = Integer.parseInt(scanner.nextLine());
+                break;
+            } catch (Exception e) {
+                System.out.print("Invalid entry. Please enter the total monthly periods: ");
+            }
+        }
+        return monthlyPeriods;
     }
 
 }
