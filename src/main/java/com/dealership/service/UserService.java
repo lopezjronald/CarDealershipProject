@@ -48,7 +48,7 @@ public class UserService {
             try {
                 String sql =
                         "INSERT INTO vehicle " +
-                                "(vehicle_vin, vehicle_make, vehicle_model, vehicle_year, owner_id) " +
+                                "(vehicle_vin, vehicle_make, vehicle_model, vehicle_year, user_id) " +
                                 "VALUES " + "('" +
                                 newVehicle.getVin() + "', '" +
                                 newVehicle.getMake() + "', '" +
@@ -223,22 +223,22 @@ public class UserService {
         Offer newOffer;
         String vin = checkIfVehicleExists(user, connection, scanner);
         int isCustomerVehicle = checkIfVehicleBelongsToCustomer(vin, connection);
-        if (vin != null && isCustomerVehicle != -1) {
+        if (vin != null) {
             System.out.println("Please enter your offer");
             while (true) {
                 try {
                     double offerAmount = Double.parseDouble(scanner.nextLine());
                     newOffer = new Offer(offerAmount, user.getUserId(), vin);
-                    break;
+                    addOfferIntoDatabase(user, newOffer, connection);
+
+                    return newOffer;
                 } catch (Exception e) {
                     System.out.println("You have entered an invalid entry. Please enter your offer amount.");
                     continue;
                 }
             }
-            addOfferIntoDatabase(user, newOffer, connection);
-            return newOffer;
         }
-        return null;
+        return new Offer();
     }
 
     public void addOfferIntoDatabase(DealershipUser user, Offer offer, Connection connection) {
@@ -413,7 +413,7 @@ public class UserService {
                 "SELECT COUNT(*) " +
                         "FROM vehicle " +
                         "INNER JOIN dealership_user " +
-                        "ON dealership_user.id = vehicle.owner_id " +
+                        "ON dealership_user.id = vehicle.user_id " +
                         "INNER JOIN user_type " +
                         "ON user_type.id = dealership_user.user_type " +
                         "WHERE user_type.id = '" + EMPLOYEE_NUMBER +
@@ -437,11 +437,11 @@ public class UserService {
                 "SELECT vehicle_vin, vehicle_make, vehicle_model, vehicle_year " +
                         "FROM vehicle " +
                         "INNER JOIN dealership_user " +
-                        "ON dealership_user.id = vehicle.owner_id " +
+                        "ON dealership_user.id = vehicle.user_id " +
                         "INNER JOIN user_type " +
                         "ON user_type.id = dealership_user.user_type " +
-                        "WHERE user_type.id = '" + EMPLOYEE_NUMBER +
-                        "' OR user_type.id ='" + OWNER_NUMBER + "'";
+                        "WHERE user_type.id = " + EMPLOYEE_NUMBER +
+                        " OR user_type.id =" + OWNER_NUMBER;
         try {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sql);
@@ -451,7 +451,7 @@ public class UserService {
                 description = "Vehicle VIN #: " + resultSet.getString("vehicle_vin") +
                         " | Make: " + resultSet.getString("vehicle_make") +
                         " | Model: " + resultSet.getString("vehicle_model") +
-                        " | Year: " + resultSet.getString("vehicle_year");
+                        " | Year: " + resultSet.getInt("vehicle_year");
                 inventory[count++] = description;
             }
             inventory[count] = Integer.toString(inventoryCount);
@@ -551,7 +551,7 @@ public class UserService {
             return 0;
         }
         try {
-            String sql = "SELECT COUNT(*) FROM vehicle WHERE owner_id = " + user.getUserId();
+            String sql = "SELECT COUNT(*) FROM payment WHERE owner_id = " + user.getUserId();
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sql);
             while (resultSet.next()) {
@@ -567,16 +567,16 @@ public class UserService {
         String[] inventory = new String[getUserVehicleCount(user, connection)];
         if (inventory.length > 0) {
             try {
-                String sql = "SELECT * FROM vehicle WHERE owner_id = " + user.getUserId();
+                String sql = "SELECT * FROM payment WHERE owner_id = " + user.getUserId();
                 Statement statement = connection.createStatement();
                 ResultSet resultSet = statement.executeQuery(sql);
                 int count = 0;
                 String description;
                 while (resultSet.next()) {
-                    description = "Vehicle VIN #: " + resultSet.getString("vehicle_vin") +
-                            " | Make: " + resultSet.getString("vehicle_make") +
-                            " | Model: " + resultSet.getString("vehicle_model") +
-                            " | Year: " + resultSet.getString("vehicle_year");
+                    description = "Vehicle VIN #: " + resultSet.getString("vehicle_id") +
+                            " | Payment Amount: " + resultSet.getDouble("payment_amount") +
+                            " | Vehicle Balance: " + resultSet.getDouble("vehicle_balance") +
+                            " | Purchase Price: " + resultSet.getInt("purchase_price");
                     inventory[count++] = description;
                 }
                 return inventory;
@@ -606,7 +606,7 @@ public class UserService {
                 "SELECT dealership_user.user_type " +
                         "FROM vehicle " +
                         "INNER JOIN dealership_user " +
-                        "ON dealership_user.id = vehicle.owner_id " +
+                        "ON dealership_user.id = vehicle.user_id " +
                         "INNER JOIN user_type " +
                         "ON user_type.id = dealership_user.user_type " +
                         "WHERE vehicle_vin ='" + vin + "'";
@@ -641,7 +641,7 @@ public class UserService {
     }
 
     public String askForVin(Scanner scanner) {
-        System.out.print("\n\nEnter Vehicle VIN#: ");
+        System.out.println("\n\nEnter Vehicle VIN#: ");
         return scanner.nextLine();
     }
 

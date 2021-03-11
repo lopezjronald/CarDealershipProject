@@ -56,6 +56,7 @@ public class CustomerService {
                 case 6:
                     break;
                 default:
+                    System.out.println("You have entered an invalid entry.");
                     continue;
             }
 
@@ -119,7 +120,6 @@ public class CustomerService {
         String[] dealershipInventory = userService.viewDealershipInventory(user, connection);
         System.out.println("\n\nCar Dealership Currently Has " + dealershipInventory[dealershipInventory.length - 1] + " In Stock:");
         for (int i = 0; i < dealershipInventory.length - 1; i++) {
-
             System.out.println(dealershipInventory[i]);
         }
         return dealershipInventory;

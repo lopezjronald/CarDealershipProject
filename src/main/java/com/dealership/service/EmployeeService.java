@@ -8,9 +8,10 @@ import java.util.Scanner;
 
 public class EmployeeService {
 
-    Scanner scanner;
     private final UserService userService;
     private final DealershipUser user;
+    Scanner scanner;
+
 
     public EmployeeService(UserService userService, DealershipUser user, Scanner scanner) {
         this.userService = userService;
@@ -30,21 +31,25 @@ public class EmployeeService {
             }
             switch (userOption) {
                 case 1:
+                    getDealershipInventory(user, connection);
                     displayOffers(connection, userService);
                     break;
                 case 2:
+                    getDealershipInventory(user, connection);
                     userService.acceptOffer(user, scanner, connection);
                     break;
                 case 3:
                     userService.removeVehicleFromOffers(user, connection, scanner);
                     break;
                 case 4:
+                    getDealershipInventory(user, connection);
                     userService.removeVehicleFromInventory(user, connection, scanner);
                     break;
                 case 5:
                     userService.addVehicle(user, connection, scanner);
                     break;
                 case 6:
+                    getDealershipInventory(user, connection);
                     userService.getCustomerPaymentHistory(connection, scanner);
                     break;
                 case 7:
@@ -77,6 +82,27 @@ public class EmployeeService {
 //       chooseFromEmployeeMenu(allOffers, user, connection);
     }
 
+    public String[] getMyVehicles(UserService userService, DealershipUser user, Connection connection) {
+        String[] myVehicles;
+        myVehicles = userService.viewUserVehicles(user, connection);
+        System.out.println();
+        System.out.println("Cars Owned by " + userService.capitalizeString(user.getFirstName()));
+
+        for (String eachVehicle : myVehicles) {
+            System.out.println(eachVehicle);
+        }
+
+        return myVehicles;
+    }
+
+    public String[] getDealershipInventory(DealershipUser user, Connection connection) {
+        String[] dealershipInventory = userService.viewDealershipInventory(user, connection);
+        System.out.println("\n\nCar Dealership Currently Has " + dealershipInventory[dealershipInventory.length - 1] + " In Stock:");
+        for (int i = 0; i < dealershipInventory.length - 1; i++) {
+            System.out.println(dealershipInventory[i]);
+        }
+        return dealershipInventory;
+    }
 
     public int showEmployeeMenu(DealershipUser user) {
         while (true) {
